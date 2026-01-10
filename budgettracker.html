@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Budget Tracker</title>
+    <style>body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 600px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1, h2, h3 {
+    text-align: center;
+}
+
+form {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    padding: 10px;
+    margin: 0 5px;
+    flex: 1;
+}
+
+button {
+    padding: 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #218838;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1>Personal Budget Tracker</h1>
+        <form id="transaction-form">
+            <input type="text" id="description" placeholder="Description" required>
+            <input type="number" id="amount" placeholder="Amount" required>
+            <select id="type">
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+            </select>
+            <button type="submit">Add Transaction</button>
+        </form>
+        <h2>Transaction History</h2>
+        <ul id="transaction-list"></ul>
+        <h3>Total Income: <span id="total-income">$0.00</span></h3>
+        <h3>Total Expenses: <span id="total-expense">$0.00</span></h3>
+        <h3>Balance: <span id="balance">$0.00</span></h3>
+    </div>
+    <script>document.addEventListener("DOMContentLoaded", () => {
+    const transactionForm = document.getElementById("transaction-form");
+    const transactionList = document.getElementById("transaction-list");
+    const totalIncome = document.getElementById("total-income");
+    const totalExpense = document.getElementById("total-expense");
+    const balance = document.getElementById("balance");
+
+    let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+
+    const updateUI = () => {
+        transactionList.innerHTML = "";
+        let incomeTotal = 0;
+        let expenseTotal = 0;
+
+        transactions.forEach((transaction, index) => {
+            const li = document.createElement("li");
+            li.innerHTML = `${transaction.description}: $${transaction.amount.toFixed(2)} <button onclick="removeTransaction(${index})">X</button>`;
+            transactionList.appendChild(li);
+
+            if (transaction.type === "income") {
+                incomeTotal += transaction.amount;
+            } else {
+                expenseTotal += transaction.amount;
+            }
+        });
+
+        totalIncome.textContent = `$${incomeTotal.toFixed(2)}`;
+        totalExpense.textContent = `$${expenseTotal.toFixed(2)}`;
+        balance.textContent = `$${(incomeTotal - expenseTotal).toFixed(2)}`;
+    };
+
+    const addTransaction = (e) => {
+        e.preventDefault();
+        const description = document.getElementById("description").value;
+        const amount = parseFloat(document.getElementById("amount").value);
+        const type = document.getElementById("type").value;
+
+        if (description && !isNaN(amount)) {
+            transactions.push({ description, amount, type });
+            localStorage.setItem("transactions", JSON.stringify(transactions));
+            updateUI();
+            transactionForm.reset();
+        }
+    };
+
+    window.removeTransaction = (index) => {
+        transactions.splice(index, 1);
+        localStorage.setItem("transactions", JSON.stringify(transactions));
+        updateUI();
+    };
+
+    transactionForm.addEventListener("submit", addTransaction);
+    updateUI();
+});
+</script>
+</body>
+</html>

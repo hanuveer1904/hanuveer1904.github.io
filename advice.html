@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Reverse Advice</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{
+  background:#0b0f1a;
+  color:#0f0;
+  font-family:monospace;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+  margin:0;
+}
+
+.container{
+  background:#111;
+  padding:20px;
+  border-radius:18px;
+  width:350px;
+  box-shadow:0 0 40px rgba(0,255,0,0.2);
+  text-align:center;
+}
+
+input{
+  width:100%;
+  padding:10px;
+  margin-bottom:10px;
+  border:none;
+  border-radius:8px;
+  background:#000;
+  color:#0f0;
+  font-family:monospace;
+  font-size:16px;
+}
+
+button{
+  padding:10px 16px;
+  font-size:16px;
+  border:none;
+  border-radius:8px;
+  background:#222;
+  color:#0f0;
+  cursor:pointer;
+}
+
+button:hover{
+  background:#0a0;
+  color:#000;
+}
+
+#output{
+  margin-top:15px;
+  min-height:40px;
+  word-wrap:break-word;
+  font-size:14px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Reverse Advice</h2>
+  <input id="question" placeholder="Ask your question...">
+  <button onclick="giveAdvice()">Get Advice</button>
+  <div id="output"></div>
+</div>
+
+<script>
+const advices = [
+  "Absolutely do the opposite.",
+  "No, that will fail spectacularly.",
+  "Why not just ignore it entirely?",
+  "Sure, ruin everything.",
+  "Do the exact wrong thing.",
+  "Trust no one, especially yourself.",
+  "Procrastinate, it helps… not.",
+  "Run, hide, and confuse everyone.",
+  "Just do nothing and watch chaos unfold.",
+  "Definitely not a good idea… go ahead anyway."
+];
+
+function giveAdvice(){
+  const q = document.getElementById("question").value.trim();
+  const out = document.getElementById("output");
+
+  if(!q){
+    out.textContent = "You need to ask something first...";
+    return;
+  }
+
+  const advice = advices[Math.floor(Math.random() * advices.length)];
+  out.textContent = advice;
+}
+</script>
+
+</body>
+</html>

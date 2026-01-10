@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Question Bank</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f5f5f5;
+            color: black;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        /* Dark Mode Overrides */
+        body.dark-mode {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        .page-header {
+            width: 100%;
+            text-align: center;
+            font-size: 25px;
+            font-weight: bold;
+            padding: 15px;
+            background: #0078FF;
+            color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 7vh;
+            transition: background 0.3s;
+        }
+        body.dark-mode .page-header {
+            background: #333;
+        }
+        .menu-container {
+            position: absolute;
+            right: 15px;
+        }
+        .menu-button {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transition: background 0.2s ease-in-out;
+        }
+        .menu-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 10px;
+            top: 50px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            overflow: hidden;
+            z-index: 100;
+            min-width: 180px;
+            padding: 10px;
+            text-align: left;
+            transition: opacity 0.3s ease, transform 0.2s ease-in-out;
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        .dropdown-menu.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .dropdown-menu button, 
+        .dropdown-menu select {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background: white;
+            text-align: left;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s ease-in-out;
+            display: block;
+        }
+        .dropdown-menu button:hover, 
+        .dropdown-menu select:hover {
+            background: #f0f0f0;
+        }
+        body.dark-mode .dropdown-menu {
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+        }
+        body.dark-mode .dropdown-menu button, 
+        body.dark-mode .dropdown-menu select {
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+        }
+        body.dark-mode .dropdown-menu button:hover, 
+        body.dark-mode .dropdown-menu select:hover {
+            background: #444;
+        }
+        .chat-container {
+            flex: 1;
+            margin-top: 60px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding-bottom: 100px; /* Space for input area */
+            width: 95%;
+        }
+        .chat-container p {
+            margin: 0;
+            padding: 0;
+            font-size: 14px;
+            color: inherit;
+            text-decoration: none;
+            text-align: center;
+        }
+        .chat-container a {
+            text-decoration: none;
+            color: #0078FF;
+        }
+        .input-area {
+            position: fixed;
+            bottom: 40px; /* Space for disclaimer */
+            left: 0;
+            width: 100%;
+            display: flex;
+            background: white;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+            transition: background 0.3s;
+        }
+        body.dark-mode .input-area {
+            background: #333;
+            border-top: 1px solid #555;
+        }
+        .input-area input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            transition: background 0.3s, color 0.3s, border 0.3s;
+        }
+        body.dark-mode .input-area input {
+            background: #555;
+            color: #fff;
+            border: 1px solid #777;
+        }
+        .mic-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0078FF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s ease-in-out;
+        }
+        .mic-button:hover {
+            background: #005FCC;
+        }
+        #sendButton {
+            padding: 10px 20px;
+            border-radius: 50px;
+            background: #0078FF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s ease-in-out;
+        }
+        #sendButton:hover {
+            background: #005FCC;
+        }
+        .disclaimer {
+            text-align: center;
+            font-size: 12px;
+            color: gray;
+            padding: 5px;
+            background: #ffffff;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            transition: background 0.3s, color 0.3s;
+        }
+        body.dark-mode .disclaimer {
+            background: #333;
+            color: #bbb;
+        }
+        .links {
+            text-align: center;
+            font-size: 14px;
+            color: #000;
+            padding: 5px;
+            background: #ffffff;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            transition: background 0.3s, color 0.3s;
+        }
+        body.dark-mode .links {
+            background: #333;
+            color: #bbb;
+        }
+        /* Chat message styling */
+        #chat-box {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px;
+            width: 100%;
+        }
+        .message {
+            margin: 5px;
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        .user-message {
+            background-color: #0078FF;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        .bot-message {
+            background-color: #f0f0f0;
+            color: black;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+        body.dark-mode .bot-message {
+            background-color: #2a2a2a;
+            color: white;
+        }
+        /* Modal Popup Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            transition: background-color 0.3s;
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .close-button {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+        }
+        .close-button:hover {
+            color: #000;
+        }
+        body.dark-mode .modal-content {
+            background-color: #333;
+            color: #e0e0e0;
+        }
+        body.dark-mode .modal-content input[type="text"],
+        body.dark-mode .modal-content textarea {
+            background: #555;
+            color: #fff;
+            border: 1px solid #777;
+        }
+        body.dark-mode .modal-content h1 {
+            color: #80b3ff;
+        }
+        body.dark-mode .modal-content button {
+            background: #0078FF;
+        }
+        /* Updated Report Input Styling */
+        .reportSubject {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #000;
+            border-radius: 5px;
+            transition: background 0.3s, color 0.3s, border 0.3s;
+            margin-bottom: 10px;
+        }
+        .reportsubmit {
+            padding: 10px 20px;
+            border-radius: 50px;
+            background: #0078FF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s ease-in-out;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Handle Enter key press
+            document.getElementById("questionInput").addEventListener("keypress", function(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    getAnswer();
+                }
+            });
+            // Handle Send Button Click
+            document.getElementById("sendButton").addEventListener("click", function() {
+                getAnswer();
+            });
+            // Load saved language preference
+            const savedLang = localStorage.getItem("selectedLanguage") || "en";
+            document.getElementById("languageSelect").value = savedLang;
+            // Apply dark mode if set
+            if(localStorage.getItem("darkMode") === "true"){
+                document.body.classList.add("dark-mode");
+            }
+        });
+
+        let currentTypingTimeout;
+
+       // Predefined casual responses
+const casualResponses = {
+    "hello": "Hello! How can I assist you?",
+    "hi": "Hi there! What would you like to ask?",
+    "hey": "Hey! What's on your mind?",
+    "good morning": "Good morning! How can I help you today?",
+    "good afternoon": "Good afternoon! What can I do for you?",
+    "good evening": "Good evening! How can I assist you tonight?",
+    "who are you": "I am JSQB, your AI assistant!",
+    "how are you": "I'm just a bot, but I'm functioning perfectly!",
+    "what's up": "Not much! Just here to help with your questions.",
+    "thank you": "You're welcome! Let me know if you need anything else.",
+    "thanks": "You're welcome! I'm here to help.",
+    "bye": "Goodbye! Have a great day!",
+    "see you later": "See you later! Feel free to ask if you need more help."
+};
+
+        // Handle user input
+        function getAnswer() {
+            const inputField = document.getElementById("questionInput");
+            const userInput = inputField.value.trim().toLowerCase();
+            if (!userInput) return;
+            appendMessage("user", userInput);
+            inputField.value = "";
+            if (currentTypingTimeout) {
+                clearTimeout(currentTypingTimeout);
+            }
+            if (casualResponses[userInput]) {
+                typeMessage("bot", casualResponses[userInput]);
+            } else {
+                fetchAnswerFromWeb(userInput);
+            }
+        }
+
+        // Fetch answer from DuckDuckGo
+        async function fetchAnswerFromWeb(query) {
+            try {
+                const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_redirect=1&no_html=1`);
+                const data = await response.json();
+                let answer = data.AbstractText || data.Heading || null;
+                if (!answer) {
+                    console.log("DuckDuckGo didn't return an answer, searching Wikipedia...");
+                    fetchWikipediaSearch(query);
+                } else {
+                    typeMessage("bot", answer);
+                }
+            } catch (error) {
+                typeMessage("bot", "I couldn't retrieve an answer. Try rephrasing your question.");
+                console.error("Search Error:", error);
+            }
+        }
+
+        // Fetch Wikipedia search result
+        async function fetchWikipediaSearch(query) {
+            try {
+                const response = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`);
+                const data = await response.json();
+                let answer = data.extract || "I couldn't find an exact answer. Try asking differently.";
+                typeMessage("bot", answer);
+            } catch (error) {
+                typeMessage("bot", "Oops! I couldn't find the answer right now.");
+                console.error("Wikipedia Search Error:", error);
+            }
+        }
+
+        // Append messages to chat
+        function appendMessage(sender, text) {
+            const chatBox = document.getElementById("chat-box");
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message", sender === "user" ? "user-message" : "bot-message");
+            messageDiv.textContent = text;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Typing effect for bot messages
+        async function typeMessage(sender, text) {
+            const chatBox = document.getElementById("chat-box");
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message", sender === "user" ? "user-message" : "bot-message");
+            chatBox.appendChild(messageDiv);
+            const targetLang = localStorage.getItem("selectedLanguage") || "en";
+            const translatedText = await translateText(text, targetLang);
+            let index = 0;
+            function type() {
+                if (index < translatedText.length) {
+                    messageDiv.textContent += translatedText.charAt(index);
+                    index++;
+                    currentTypingTimeout = setTimeout(type, 50);
+                } else {
+                    speakText(translatedText);
+                }
+            }
+            if (currentTypingTimeout) {
+                clearTimeout(currentTypingTimeout);
+            }
+            type();
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Text-to-Speech for bot responses
+        function speakText(text) {
+            if ("speechSynthesis" in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = localStorage.getItem("selectedLanguage") || "en";
+                speechSynthesis.speak(utterance);
+            } else {
+                console.warn("Text-to-Speech is not supported in this browser.");
+            }
+        }
+
+        // Speech-to-Text (Mic Button)
+        function startSpeechRecognition() {
+            if (!("webkitSpeechRecognition" in window)) {
+                alert("Speech Recognition is not supported in this browser.");
+                return;
+            }
+            const recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = "en-US";
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById("questionInput").value = transcript;
+            };
+            recognition.start();
+        }
+
+        // Toggle dropdown menu
+        function toggleMenu() {
+            const menu = document.getElementById("menu");
+            menu.classList.toggle("show");
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener("click", function(event) {
+            const menu = document.getElementById("menu");
+            const menuButton = document.querySelector(".menu-button");
+            if (!menu.contains(event.target) && event.target !== menuButton) {
+                menu.classList.remove("show");
+            }
+        });
+
+        // Toggle dark mode
+        function toggleDarkMode() {
+            document.body.classList.toggle("dark-mode");
+            localStorage.setItem("darkMode", document.body.classList.contains("dark-mode") ? "true" : "false");
+        }
+
+        // Change Language Placeholder
+        function changeLanguage() {
+            const selectedLang = document.getElementById("languageSelect").value;
+            localStorage.setItem("selectedLanguage", selectedLang);
+        }
+
+        // Translate Text using Google Translate API
+        async function translateText(text, targetLang) {
+            if (targetLang === "en") return text;
+            try {
+                const response = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`);
+                const data = await response.json();
+                return data[0].map(entry => entry[0]).join("");
+            } catch (error) {
+                console.error("Translation Error:", error);
+                return text;
+            }
+        }
+        
+        /* Modal Popup Functions */
+        function openReportModal() {
+            document.getElementById("reportModal").style.display = "block";
+        }
+        function closeReportModal() {
+            document.getElementById("reportModal").style.display = "none";
+        }
+        window.onclick = function(event) {
+            const modal = document.getElementById("reportModal");
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="page-header">
+        JavaScript Question Bank
+        <div class="menu-container">
+            <button class="menu-button" onclick="toggleMenu()">⋮</button>
+            <div class="dropdown-menu" id="menu">
+                <button onclick="toggleDarkMode()">Dark Mode</button>
+                <button onclick="openReportModal()">Report</button>
+                <select id="languageSelect" onchange="changeLanguage()">
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
+                    <option value="fr">Français</option>
+                    <option value="de">Deutsch</option>
+                    <option value="hi">हिन्दी</option>
+                    <option value="zh-CN">中文</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="chat-container">
+        <!-- Chat messages -->
+        <div id="chat-box"></div> 
+        <!-- Fixed input area with mic button -->
+        <div class="input-area">
+            <button onclick="startSpeechRecognition()" class="mic-button">
+                <i class="fa fa-microphone"></i>
+            </button>
+            <input type="text" id="questionInput" placeholder="Type or Speak...">
+            <button id="sendButton">Send</button>
+        </div>
+    </div>
+    <div class="disclaimer">
+        JSQB can make mistakes. Please confirm the accuracy of this AI model.
+    </div>
+    <div class="links">
+        Other Links - <a href="https://hanuveer1904.github.io/calculator/">Calculator</a>
+                       <a href="https://hanuveer1904.github.io/webopener/">Website Opener</a> 
+    </div>
+    <!-- Report Modal Popup -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeReportModal()">&times;</span>
+            <h1>Report Issue</h1>
+            <p>If you have encountered an issue or error, please fill out the form below.</p>
+            <form id="reportForm">
+                <input type="text" id="reportSubject" name="reportSubject" placeholder="Enter subject"  class="reportSubject" required>
+                <button type="submit" class="reportsubmit">Submit Report</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        // Handle report form submission in modal
+        document.getElementById('reportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Thank you for your report. We will look into the issue.');
+            this.reset();
+            closeReportModal();
+        });
+    </script>
+</body>
+</html>

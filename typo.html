@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  background:#0b0f1a;
+  color:#d0d0d0;
+  font-family:monospace;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+  margin:0;
+}
+
+.box{
+  background:#111;
+  padding:18px;
+  border-radius:12px;
+  width:360px;
+  box-shadow:0 0 30px rgba(0,0,0,.6);
+}
+
+textarea{
+  width:100%;
+  height:160px;
+  background:#000;
+  color:#d0d0d0;
+  border:none;
+  border-radius:8px;
+  padding:12px;
+  font-size:15px;
+  resize:none;
+  outline:none;
+}
+</style>
+</head>
+<body>
+
+<div class="box">
+  <textarea id="txt" placeholder="Start typing..."></textarea>
+</div>
+
+<script>
+// nearby keys (qwerty-style)
+const nearby = {
+  a:"sqwz", s:"awedxz", d:"serfcx", f:"drtgvc",
+  g:"ftyhbv", h:"gyujnb", j:"huikmn", k:"jiolm",
+  l:"kop",
+  q:"wa", w:"qase", e:"wsdr", r:"edft",
+  t:"rfgy", y:"tghu", u:"yhji", i:"ujko", o:"iklp", p:"ol",
+  z:"asx", x:"zsdc", c:"xdfv", v:"cfgb", b:"vghn", n:"bhjm", m:"njk"
+};
+
+const input = document.getElementById("txt");
+
+input.addEventListener("beforeinput", e=>{
+  if(!e.data) return;
+
+  let ch = e.data.toLowerCase();
+  let r = Math.random();
+
+  // 4% chance: missed keystroke
+  if(r < 0.04){
+    e.preventDefault();
+    return;
+  }
+
+  // 4% chance: wrong nearby key
+  if(r < 0.08 && nearby[ch]){
+    e.preventDefault();
+    insert( nearby[ch][Math.floor(Math.random()*nearby[ch].length)] );
+    return;
+  }
+
+  // 3% chance: double key
+  if(r < 0.11){
+    e.preventDefault();
+    insert(ch + ch);
+    return;
+  }
+
+  // 2% chance: delayed order
+  if(r < 0.13){
+    e.preventDefault();
+    setTimeout(()=>insert(ch),50);
+    return;
+  }
+});
+
+function insert(text){
+  const start = input.selectionStart;
+  const end = input.selectionEnd;
+  const val = input.value;
+
+  input.value = val.slice(0,start) + text + val.slice(end);
+  input.selectionStart = input.selectionEnd = start + text.length;
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Typing Speed Test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --bg:#0b0f1a;
+  --panel:rgba(255,255,255,.08);
+  --border:rgba(255,255,255,.15);
+  --text:#eaeaff;
+  --accent:#6c8cff;
+  --error:#ff6b6b;
+  --good:#6bff95;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:system-ui,sans-serif;
+}
+
+body{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:radial-gradient(circle at top,#141b33,var(--bg));
+  color:var(--text);
+}
+
+.app{
+  width:420px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:1.5rem;
+  backdrop-filter:blur(12px);
+}
+
+h1{
+  text-align:center;
+  margin-bottom:1rem;
+}
+
+.stats{
+  display:flex;
+  justify-content:space-between;
+  font-size:.9rem;
+  margin-bottom:1rem;
+  opacity:.9;
+}
+
+.text{
+  background:rgba(0,0,0,.35);
+  padding:1rem;
+  border-radius:12px;
+  line-height:1.6;
+  height:120px;              /* fixed window */
+  overflow:hidden;           /* auto-scroll only */
+  margin-bottom:1rem;
+  user-select:none;
+}
+
+.text span{
+  white-space:pre-wrap;
+}
+
+.text span.correct{ color:var(--good); }
+.text span.wrong{ color:var(--error); text-decoration:underline; }
+.text span.active{ background:rgba(255,255,255,.15); }
+
+input{
+  width:100%;
+  padding:.7rem;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--text);
+  outline:none;
+}
+
+button{
+  margin-top:1rem;
+  width:100%;
+  padding:.6rem;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--text);
+  cursor:pointer;
+}
+
+button:hover{
+  background:rgba(255,255,255,.12);
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+  <h1>⌨️ Typing Test</h1>
+
+  <div class="stats">
+    <span>Time: <b id="time">30</b>s</span>
+    <span>WPM: <b id="wpm">0</b></span>
+    <span>Accuracy: <b id="acc">100</b>%</span>
+  </div>
+
+  <div class="text" id="text"></div>
+
+  <input id="input" placeholder="Start typing here..." disabled>
+
+  <button onclick="start()">Start / Restart</button>
+</div>
+
+<script>
+const paragraph = `The Earth is our only home, and right now it is going through some very big changes because of how humans live. For many years, we have been using things that create smoke and pollution, and this has made the air trap too much heat. This extra heat is changing the weather all over the world, making it much harder for plants, animals, and people to live comfortably. We see this when the summers feel much hotter than they used to, or when we hear about huge fires in the woods and big floods in cities. All of these things are connected because the planet is like a big machine where every part needs to work just right. When the world gets too warm, the ice in cold places melts and goes into the ocean, which makes the water rise and take up more space. This is a problem for people who live near the ocean because their homes could end up under water. Animals are also struggling because the places where they find food and raise their babies are changing too fast for them to keep up. For example, some polar bears have less ice to walk on, and some birds find that the bugs they eat are coming out at the wrong time of year. It is not just about nature, though, because climate change also affects our health and our food. It is harder for farmers to grow corn or wheat when there is no rain, and that means food can become more expensive or harder to find. Even though these problems are very large, we are not helpless and there are many ways to make things better. We can start using cleaner ways to make power, like using the wind and the sun instead of burning things that make the air dirty. We can also try to drive less, use less plastic, and make sure we do not waste the water we have. It is also very important to protect the forests we still have because trees are like the lungs of the planet and help keep the air cool and clean. If everyone does a little bit, like recycling or planting a garden, it adds up to a huge difference. We have to remember that we are part of nature, not separate from it, and taking care of the environment is really just taking care of ourselves and our friends. Working together is the only way to make sure the Earth stays beautiful and healthy for the children who will grow up in the future. It might seem hard to change how we do things, but it is worth it to save our mountains, our oceans, and our homes. Even small steps are better than doing nothing at all.`;
+
+const textEl = document.getElementById("text");
+const input = document.getElementById("input");
+const timeEl = document.getElementById("time");
+const wpmEl = document.getElementById("wpm");
+const accEl = document.getElementById("acc");
+
+let time = 30;
+let timer;
+let started = false;
+let correct = 0;
+let total = 0;
+
+function render(){
+  textEl.innerHTML = "";
+  paragraph.split("").forEach((char,i)=>{
+    const span = document.createElement("span");
+    span.textContent = char;
+    if(i === 0) span.classList.add("active");
+    textEl.appendChild(span);
+  });
+}
+
+function start(){
+  clearInterval(timer);
+
+  render();
+
+  textEl.scrollTop = 0;   // 🔥 RESET SCROLL POSITION
+
+  input.value = "";
+  input.disabled = false;
+  input.focus();
+
+  time = 30;
+  correct = total = 0;
+  started = false;
+
+  timeEl.textContent = time;
+  wpmEl.textContent = 0;
+  accEl.textContent = 100;
+}
+
+input.addEventListener("input",()=>{
+  if(!started){
+    started = true;
+    timer = setInterval(tick,1000);
+  }
+
+  const chars = textEl.querySelectorAll("span");
+  const val = input.value.split("");
+
+  correct = 0;
+  total = val.length;
+
+  chars.forEach((span,i)=>{
+    span.classList.remove("correct","wrong","active");
+
+    if(val[i] == null){
+      if(i === val.length){
+        span.classList.add("active");
+        span.scrollIntoView({block:"nearest"});
+      }
+    }else if(val[i] === span.textContent){
+      span.classList.add("correct");
+      correct++;
+    }else{
+      span.classList.add("wrong");
+    }
+  });
+
+  updateStats();
+});
+
+function updateStats(){
+  const minutes = (30 - time) / 60;
+  const wpm = minutes > 0 ? Math.round((correct / 5) / minutes) : 0;
+  const acc = total > 0 ? Math.round((correct / total) * 100) : 100;
+
+  wpmEl.textContent = wpm;
+  accEl.textContent = acc;
+}
+
+function tick(){
+  time--;
+  timeEl.textContent = time;
+  updateStats();
+
+  if(time <= 0){
+    clearInterval(timer);
+    input.disabled = true;
+  }
+}
+
+render();
+</script>
+
+</body>
+</html>

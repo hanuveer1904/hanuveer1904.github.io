@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Hanuveer's curated collection of interactive games, tools, and fun experiments.">
+<title>Hanuveer Projects Hub</title>
+
+<style>
+:root {
+  --bg: #000000;
+  --panel: rgba(255,255,255,0.08);
+  --border: rgba(255,255,255,0.15);
+  --text: #eaeaff;
+  --accent: #6c8cff;
+}
+
+/* Reset & fonts */
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  scroll-behavior: smooth;
+}
+
+/* Header & Navbar */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  background: rgba(0,0,0,0.95);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  transition: all 0.3s ease;
+}
+
+header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+/* Navbar dropdowns */
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  font-weight: 600;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropbtn {
+  background: transparent;
+  color: var(--text);
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.dropbtn:hover { background: var(--accent); color: #fff; }
+
+.dropdown-content {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 110%;
+  left: 0;
+  background: rgba(0,0,0,0.95);
+  min-width: 200px;
+  border-radius: 6px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 20;
+}
+
+.dropdown:hover .dropdown-content {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.dropdown-content a {
+  padding: 10px 14px;
+  text-decoration: none;
+  color: var(--text);
+  display: block;
+  font-size: 0.95rem;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.dropdown-content a:hover { background: var(--accent); color: #fff; transform: translateX(4px); }
+
+/* Main */
+main {
+  max-width: 1300px;
+  margin: 3rem auto;
+  padding: 0 2rem;
+  text-align: center;
+}
+
+main h1 {
+  font-size: clamp(2.2rem, 4vw, 3rem);
+  margin-bottom: 1rem;
+}
+
+main p {
+  max-width: 750px;
+  margin: 0 auto 2.5rem;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+/* Cards */
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+  gap: 2.5rem;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  text-decoration: none;
+  color: var(--text);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  transform: translateY(0);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.35s ease, border-color 0.35s ease, opacity 0.35s ease;
+  opacity: 0;
+  animation: fadeUp 0.6s forwards;
+}
+
+.card:nth-child(1) { animation-delay: 0.05s; }
+.card:nth-child(2) { animation-delay: 0.1s; }
+.card:nth-child(3) { animation-delay: 0.15s; }
+.card:nth-child(4) { animation-delay: 0.2s; }
+.card:nth-child(5) { animation-delay: 0.25s; }
+.card:nth-child(6) { animation-delay: 0.3s; }
+.card:nth-child(7) { animation-delay: 0.35s; }
+.card:nth-child(8) { animation-delay: 0.4s; }
+.card:nth-child(9) { animation-delay: 0.45s; }
+.card:nth-child(10){ animation-delay: 0.5s; }
+.card:nth-child(11){ animation-delay: 0.55s; }
+.card:nth-child(12){ animation-delay: 0.6s; }
+
+@keyframes fadeUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.card .card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.card .card-desc {
+  font-size: 0.95rem;
+  opacity: 0.75;
+  line-height: 1.4;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 2rem 1rem;
+  opacity: 0.65;
+  font-size: 0.85rem;
+}
+
+footer a {
+  margin-left: 12px;
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 600;
+}
+
+footer a:hover { text-decoration: underline; }
+
+/* Responsive */
+@media(max-width:768px){
+  header { flex-direction: column; gap: 8px; }
+  nav { gap: 8px; justify-content: center; }
+  .cards-container { grid-template-columns: 1fr; }
+}
+@media(min-width:768px) and (max-width:1200px){
+  .cards-container { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Hanuveer Hub</h1>
+  <nav>
+    <div class="dropdown">
+      <button class="dropbtn">Games</button>
+      <div class="dropdown-content">
+        <a href=" reaction.html">Reaction Time</a>
+        <a href=" tictactoe.html">Tic-Tac-Toe</a>
+        <a href=" snake.html">Snake</a>
+        <a href=" typing.html">Typing Test</a>
+        <a href=" 2048.html">2048</a>
+        <a href=" memory.html">Memory Cards</a>
+        <a href=" minesweeper.html">Minesweeper</a>
+        <a href=" whack.html">Whack-a-Mole</a>
+        <a href=" aim.html">Aim Trainer</a>
+        <a href=" pong.html">Pong</a>
+        <a href=" breakout.html">Breakout</a>
+        <a href=" catch.html">Catch the Idiot</a>
+      </div>
+    </div>
+
+    <div class="dropdown">
+      <button class="dropbtn">Tools</button>
+      <div class="dropdown-content">
+        <a href="password.html">Password Generator</a>
+        <a href="dice.html">Dice & Coin</a>
+        <a href="pomodoro.html">Pomodoro Timer</a>
+        <a href="quotes.html">Quote Generator</a>
+        <a href="decision.html">Decision Spinner</a>
+        <a href="calculator.html">Calculator</a>
+        <a href="webopener.html">Web Opener</a>
+        <a href="chess.html">Chess</a>
+        <a href="quiz.html">Quiz</a>
+        <a href="budgettracker.html">Budget Tracker</a>
+        <a href="piano.html">Piano</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="clock.html">Clock</a>
+        <a href="scanner.html">Waste Scanner</a>
+        <a href="uploader.html">Waste Uploader</a>
+      </div>
+    </div>
+
+    <div class="dropdown">
+      <button class="dropbtn">Fun</button>
+      <div class="dropdown-content">
+        <a href="anti-idiot.html">Anti-Idiot</a>
+        <a href="do-not-press.html">Do Not Press</a>
+        <a href="fake-calc.html">Fake Calculator</a>
+        <a href="typo.html">Typo Generator</a>
+        <a href="advice.html">Reverse Advice</a>
+        <a href="meme.html">Meme Generator</a>
+      </div>
+    </div>
+
+    <div class="dropdown">
+      <button class="dropbtn">Visualizers & AI</button>
+      <div class="dropdown-content">
+        <a href="maze.html">Maze Generator</a>
+        <a href="sorting.html">Sorting Visualizer</a>
+        <a href="pathfinding.html">Pathfinding Visualizer</a>
+        <a href="physics.html">Physics Sandbox</a>
+        <a href="8puzzle.html">8-Puzzle</a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <h1>Welcome to Hanuveer Hub</h1>
+  <p>Explore a curated collection of interactive games, tools, and fun experiments with modern, sleek, professional style.</p>
+
+  <section class="cards-container">
+        <a href="reaction.html" class="card"><div class="card-title">Reaction Time</div><div class="card-desc">Test reflex speed</div></a>
+    <a href="tictactoe.html" class="card"><div class="card-title">Tic-Tac-Toe</div><div class="card-desc">Classic 2-player game</div></a>
+    <a href="snake.html" class="card"><div class="card-title">Snake</div><div class="card-desc">Eat • Grow • Survive</div></a>
+    <a href="typing.html" class="card"><div class="card-title">Typing Test</div><div class="card-desc">WPM & accuracy</div></a>
+    <a href="2048.html" class="card"><div class="card-title">2048</div><div class="card-desc">Number puzzle</div></a>
+    <a href="memory.html" class="card"><div class="card-title">Memory Cards</div><div class="card-desc">Flip & match</div></a>
+    <a href="minesweeper.html" class="card"><div class="card-title">Minesweeper</div><div class="card-desc">Classic grid puzzle</div></a>
+    <a href="whack.html" class="card"><div class="card-title">Whack-a-Mole</div><div class="card-desc">Fast clicking</div></a>
+    <a href="aim.html" class="card"><div class="card-title">Aim Trainer</div><div class="card-desc">Speed & accuracy</div></a>
+    <a href="pong.html" class="card"><div class="card-title">Pong</div><div class="card-desc">Arcade classic</div></a>
+    <a href="breakout.html" class="card"><div class="card-title">Breakout</div><div class="card-desc">Brick smashing</div></a>
+    <a href="catch.html" class="card"><div class="card-title">Catch the Idiot</div><div class="card-desc">Moving target</div></a>
+
+    <a href="password.html" class="card"><div class="card-title">Password Generator</div><div class="card-desc">Secure & random</div></a>
+    <a href="dice.html" class="card"><div class="card-title">Dice & Coin</div><div class="card-desc">Random outcomes</div></a>
+    <a href="pomodoro.html" class="card"><div class="card-title">Pomodoro Timer</div><div class="card-desc">Productivity timer</div></a>
+    <a href="quotes.html" class="card"><div class="card-title">Quote Generator</div><div class="card-desc">Motivation & fun</div></a>
+    <a href="decision.html" class="card"><div class="card-title">Decision Spinner</div><div class="card-desc">Choose for me</div></a>
+    <a href="calculator.html" class="card"><div class="card-title">Calculator</div><div class="card-desc">Simple & clean</div></a>
+    <a href="webopener.html" class="card"><div class="card-title">Web Opener</div><div class="card-desc">Open multiple URLs</div></a>
+    <a href="chess.html" class="card"><div class="card-title">Chess</div><div class="card-desc">Strategy board game</div></a>
+    <a href="quiz.html" class="card"><div class="card-title">Quiz</div><div class="card-desc">General knowledge</div></a>
+    <a href="budgettracker.html" class="card"><div class="card-title">Budget Tracker</div><div class="card-desc">Manage expenses</div></a>
+    <a href="piano.html" class="card"><div class="card-title">Piano</div><div class="card-desc">Virtual piano keyboard</div></a>
+    <a href="gallery.html" class="card"><div class="card-title">Gallery</div><div class="card-desc">Relaxing image gallery</div></a>
+    <a href="clock.html" class="card"><div class="card-title">Clock</div><div class="card-desc">Live digital clock</div></a>
+    <a href="scanner.html" class="card"><div class="card-title">Waste Scanner</div><div class="card-desc">Waste sorting assistant</div></a>
+    <a href="uploader.html" class="card"><div class="card-title">Waste Uploader</div><div class="card-desc">SDG project uploader</div></a>
+
+    <a href="anti-idiot.html" class="card"><div class="card-title">Anti-Idiot</div><div class="card-desc">Funny traps</div></a>
+    <a href="do-not-press.html" class="card"><div class="card-title">Do Not Press</div><div class="card-desc">Bad idea button</div></a>
+    <a href="fake-calc.html" class="card"><div class="card-title">Fake Calculator</div><div class="card-desc">Unexpected results</div></a>
+    <a href="typo.html" class="card"><div class="card-title">Typo Generator</div><div class="card-desc">Keyboard mishaps</div></a>
+    <a href="advice.html" class="card"><div class="card-title">Reverse Advice</div><div class="card-desc">Worst tips ever</div></a>
+    <a href="meme.html" class="card"><div class="card-title">Meme Generator</div><div class="card-desc">Random memes</div></a>
+
+    <a href="maze.html" class="card"><div class="card-title">Maze Generator</div><div class="card-desc">Generate & solve</div></a>
+    <a href="sorting.html" class="card"><div class="card-title">Sorting Visualizer</div><div class="card-desc">Animated algorithms</div></a>
+    <a href="pathfinding.html" class="card"><div class="card-title">Pathfinding Visualizer</div><div class="card-desc">Grid algorithms</div></a>
+    <a href="physics.html" class="card"><div class="card-title">Physics Sandbox</div><div class="card-desc">Gravity & collisions</div></a>
+    <a href="8puzzle.html" class="card"><div class="card-title">8-Puzzle</div><div class="card-desc">Tile sliding</div></a>
+  </section>
+</main>
+
+<footer>
+  &copy; 2026 Hanuveer
+  <a href="mailto:hanuveer1904@gmail.com">Email</a>
+  <a href="https://github.com/hanuveer1904" target="_blank">GitHub</a>
+</footer>
+
+</body>
+</html>

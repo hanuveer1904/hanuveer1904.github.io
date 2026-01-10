@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Decision Spinner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{
+  background:#0b0f1a;
+  color:#0f0;
+  font-family:monospace;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+  margin:0;
+}
+
+.container{
+  background:#111;
+  padding:20px 25px;
+  border-radius:16px;
+  width:350px;
+  box-shadow:0 0 40px rgba(0,255,0,.2);
+  text-align:center;
+}
+
+h2{
+  margin-top:0;
+  margin-bottom:15px;
+}
+
+input{
+  width:80%;
+  padding:8px;
+  font-size:14px;
+  border:none;
+  border-radius:6px;
+  background:#000;
+  color:#0f0;
+  margin-bottom:8px;
+}
+
+button{
+  padding:10px 16px;
+  font-size:16px;
+  border:none;
+  border-radius:8px;
+  background:#222;
+  color:#0f0;
+  cursor:pointer;
+  margin:5px;
+}
+
+button:hover{
+  background:#0a0;
+  color:#000;
+}
+
+#result{
+  margin-top:15px;
+  font-size:18px;
+  min-height:40px;
+  background:#000;
+  padding:10px;
+  border-radius:8px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Decision Spinner</h2>
+  <input type="text" id="options" placeholder="Enter options separated by commas" value="Go outside,Play game,Study,Relax">
+  <div>
+    <button onclick="spin()">Spin</button>
+    <button onclick="clearResult()">Clear</button>
+  </div>
+  <div id="result">Your decision will appear here...</div>
+</div>
+
+<script>
+const result = document.getElementById("result");
+
+function spin(){
+  let input = document.getElementById("options").value.trim();
+  if(!input) return;
+  
+  let options = input.split(',').map(opt => opt.trim()).filter(opt => opt);
+  if(options.length === 0) return;
+  
+  result.textContent = "Spinning...";
+  
+  // small "spinning" animation
+  let i = 0;
+  const interval = setInterval(()=>{
+    result.textContent = options[i % options.length];
+    i++;
+  }, 100);
+  
+  setTimeout(()=>{
+    clearInterval(interval);
+    const choice = options[Math.floor(Math.random()*options.length)];
+    result.textContent = `✅ ${choice}`;
+  }, 2000); // 2-second spin
+}
+
+function clearResult(){
+  result.textContent = "Your decision will appear here...";
+}
+</script>
+
+</body>
+</html>

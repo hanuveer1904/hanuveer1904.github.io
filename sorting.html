@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sorting Visualizer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --bg:#0b0f1a;
+  --panel:rgba(255,255,255,.08);
+  --border:rgba(255,255,255,.15);
+  --bar:#6c8cff;
+  --compare:#ffd166;
+  --swap:#ff6b6b;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:system-ui,sans-serif;
+}
+
+body{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:radial-gradient(circle at top,#141b33,var(--bg));
+  color:white;
+}
+
+.app{
+  width:640px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:1rem;
+  backdrop-filter:blur(12px);
+}
+
+h1{
+  text-align:center;
+  margin-bottom:.6rem;
+}
+
+.controls{
+  display:flex;
+  gap:.5rem;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-bottom:.7rem;
+}
+
+select,button,input{
+  background:transparent;
+  border:1px solid var(--border);
+  color:white;
+  padding:.35rem .6rem;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+button:hover{
+  background:rgba(255,255,255,.12);
+}
+
+input[type=range]{
+  width:100px;
+}
+
+.bars{
+  height:260px;
+  display:flex;
+  align-items:flex-end;
+  gap:2px;
+  margin-top:.5rem;
+}
+
+.bar{
+  flex:1;
+  background:var(--bar);
+  border-radius:4px 4px 0 0;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+  <h1>📊 Sorting Visualizer</h1>
+
+  <div class="controls">
+    <select id="algo">
+      <option value="bubble">Bubble Sort</option>
+      <option value="selection">Selection Sort</option>
+      <option value="insertion">Insertion Sort</option>
+    </select>
+
+    <button onclick="generate()">New Array</button>
+    <button onclick="start()">Start</button>
+
+    <label>
+      Speed
+      <input type="range" min="5" max="200" value="60" id="speed">
+    </label>
+  </div>
+
+  <div class="bars" id="bars"></div>
+</div>
+
+<script>
+const barsEl = document.getElementById("bars");
+const algoEl = document.getElementById("algo");
+const speedEl = document.getElementById("speed");
+
+let arr = [];
+let running = false;
+
+function sleep(ms){
+  return new Promise(r=>setTimeout(r,ms));
+}
+
+function generate(){
+  if(running) return;
+  arr = [];
+  for(let i=0;i<50;i++){
+    arr.push(Math.floor(Math.random()*200)+20);
+  }
+  render();
+}
+
+function render(active=[], swap=[]){
+  barsEl.innerHTML = "";
+  arr.forEach((v,i)=>{
+    const b = document.createElement("div");
+    b.className = "bar";
+    b.style.height = v + "px";
+    if(active.includes(i)) b.style.background = "var(--compare)";
+    if(swap.includes(i)) b.style.background = "var(--swap)";
+    barsEl.appendChild(b);
+  });
+}
+
+async function start(){
+  if(running) return;
+  running = true;
+  if(algoEl.value === "bubble") await bubble();
+  if(algoEl.value === "selection") await selection();
+  if(algoEl.value === "insertion") await insertion();
+  running = false;
+}
+
+async function bubble(){
+  for(let i=0;i<arr.length;i++){
+    for(let j=0;j<arr.length-i-1;j++){
+      render([j,j+1]);
+      await sleep(speedEl.value);
+      if(arr[j] > arr[j+1]){
+        [arr[j],arr[j+1]] = [arr[j+1],arr[j]];
+        render([], [j,j+1]);
+        await sleep(speedEl.value);
+      }
+    }
+  }
+  render();
+}
+
+async function selection(){
+  for(let i=0;i<arr.length;i++){
+    let min = i;
+    for(let j=i+1;j<arr.length;j++){
+      render([min,j]);
+      await sleep(speedEl.value);
+      if(arr[j] < arr[min]) min = j;
+    }
+    if(min !== i){
+      [arr[i],arr[min]] = [arr[min],arr[i]];
+      render([], [i,min]);
+      await sleep(speedEl.value);
+    }
+  }
+  render();
+}
+
+async function insertion(){
+  for(let i=1;i<arr.length;i++){
+    let key = arr[i];
+    let j = i-1;
+    while(j>=0 && arr[j] > key){
+      arr[j+1] = arr[j];
+      render([j,j+1]);
+      await sleep(speedEl.value);
+      j--;
+    }
+    arr[j+1] = key;
+    render([], [j+1]);
+    await sleep(speedEl.value);
+  }
+  render();
+}
+
+generate();
+</script>
+
+</body>
+</html>

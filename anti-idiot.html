@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anti-Nirbhay Site</title>
+<style>
+:root{
+  --bg:#0b0f1a;
+  --panel:rgba(255,255,255,.05);
+  --border:rgba(255,255,255,.15);
+  --text:#e8ebff;
+  --accent:#4cd964;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;}
+body{
+  background:linear-gradient(180deg,#0f1221,#05070f);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  color:var(--text);
+}
+
+.shell{
+  width:min(480px,90vw);
+  padding:32px;
+  border-radius:24px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  backdrop-filter:blur(18px);
+  box-shadow:0 30px 60px rgba(0,0,0,.5);
+  text-align:center;
+}
+
+h1{
+  font-size:1.6rem;
+  margin-bottom:12px;
+}
+
+p{
+  color:#aab0ff;
+  margin-bottom:18px;
+}
+
+/* Buttons */
+.prank-btn{
+  margin:8px;
+  padding:12px 24px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(180deg,#6bffb2,#3edc8a);
+  color:#08140c;
+  font-weight:600;
+  cursor:pointer;
+  transition:transform .15s ease, box-shadow .15s ease;
+  position:relative;
+}
+
+.prank-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 28px rgba(76,217,100,.45);
+}
+
+#prank-area{
+  position:relative;
+  margin-top:24px;
+  min-height:180px;
+}
+
+/* Jumpscare */
+.jumpscare{
+  position:fixed;
+  inset:0;
+  background:black;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+  z-index:9999;
+}
+.jumpscare img{
+  width:100vw;
+  height:100vh;
+  object-fit:cover;
+  transform:scale(1.25);
+  filter:brightness(1.8) contrast(1.6);
+}
+.jumpscare.active img{
+  animation:shake 700ms linear forwards;
+}
+@keyframes shake {
+  0% { transform:translate(0,0) scale(1.25); }
+  20% { transform:translate(-8px,6px) scale(1.15); }
+  40% { transform:translate(8px,-6px) scale(1.1); }
+  60% { transform:translate(-6px,4px) scale(1.05); }
+  80% { transform:translate(6px,-4px) scale(1.02); }
+  100% { transform:translate(0,0) scale(1); }
+}
+</style>
+</head>
+<body>
+
+<div class="jumpscare" id="jumpscare">
+  <img src="ghost.webp" alt="">
+</div>
+
+<div class="shell">
+  <h1>Welcome to the Anti-Nirbhay Site</h1>
+  <p>Click the buttons… if you dare.</p>
+  <div id="prank-area">
+    <button class="prank-btn">Click me!</button>
+    <button class="prank-btn">Do not click!</button>
+    <button class="prank-btn">Try me!</button>
+    <button class="prank-btn">Danger!</button>
+    <button class="prank-btn">Press here!</button>
+  </div>
+</div>
+
+<script>
+const prankArea = document.getElementById("prank-area");
+const buttons = document.querySelectorAll(".prank-btn");
+const scare = document.getElementById("jumpscare");
+let scared = false;
+
+// Random move function
+function randomMove(btn){
+  const area = prankArea.getBoundingClientRect();
+  const maxX = area.width - btn.offsetWidth;
+  const maxY = area.height - btn.offsetHeight;
+  btn.style.position = "absolute";
+  btn.style.left = Math.random()*maxX + "px";
+  btn.style.top = Math.random()*maxY + "px";
+}
+
+// Make buttons prank
+buttons.forEach(btn=>{
+  btn.onclick = ()=>{
+    const action = Math.floor(Math.random()*3);
+    if(action===0){
+      randomMove(btn);
+    } else if(action===1){
+      btn.textContent = ["Oops!","Try again!","Nope!","Haha!"][Math.floor(Math.random()*4)];
+    } else if(action===2){
+      const clone = btn.cloneNode(true);
+      prankArea.appendChild(clone);
+      clone.style.position="absolute";
+      randomMove(clone);
+      clone.onclick = btn.onclick;
+    }
+
+    // trigger jumpscare once
+    if(!scared && Math.random()<0.25){
+      scared = true;
+      jumpscare();
+    }
+  };
+});
+
+// Jumpscare function
+function jumpscare(){
+  scare.classList.add("active");
+  setTimeout(()=>{ scare.classList.remove("active"); },700);
+}
+</script>
+
+</body>
+</html>

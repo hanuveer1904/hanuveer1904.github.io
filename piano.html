@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>2-Octave Piano</title>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: sans-serif;
+      padding: 20px;
+    }
+
+    .piano {
+      position: relative;
+      display: flex;
+      user-select: none;
+    }
+
+    .key {
+      width: 50px;
+      height: 220px;
+      margin: 1px;
+      background: white;
+      border: 1px solid #333;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+      z-index: 1;
+      position: relative;
+      font-size: 14px;
+      padding-bottom: 6px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .key.black {
+      width: 30px;
+      height: 140px;
+      background: black;
+      color: white;
+      position: absolute;
+      z-index: 2;
+      margin: 0;
+      font-size: 12px;
+      padding-bottom: 4px;
+    }
+
+    .key:active,
+    .key.active {
+      background: #ccc;
+    }
+
+    .key.black:active,
+    .key.black.active {
+      background: #444;
+    }
+
+    .label {
+      font-size: 10px;
+      opacity: 0.8;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>2-Octave Web Piano</h1>
+  <p>Play using your <strong>mouse</strong> or <strong>keyboard (A–K, W–O)</strong></p>
+  <div class="piano" id="piano"></div>
+
+  <script>
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    const notes = [
+      { note: "C4", freq: 261.63, key: "a" },
+      { note: "C#4", freq: 277.18, key: "w" },
+      { note: "D4", freq: 293.66, key: "s" },
+      { note: "D#4", freq: 311.13, key: "e" },
+      { note: "E4", freq: 329.63, key: "d" },
+      { note: "F4", freq: 349.23, key: "f" },
+      { note: "F#4", freq: 369.99, key: "t" },
+      { note: "G4", freq: 392.00, key: "g" },
+      { note: "G#4", freq: 415.30, key: "y" },
+      { note: "A4", freq: 440.00, key: "h" },
+      { note: "A#4", freq: 466.16, key: "u" },
+      { note: "B4", freq: 493.88, key: "j" },
+      { note: "C5", freq: 523.25, key: "k" },
+      { note: "C#5", freq: 554.37, key: "o" },
+      { note: "D5", freq: 587.33, key: "l" },
+      { note: "D#5", freq: 622.25, key: "p" },
+      { note: "E5", freq: 659.25, key: ";" },
+      { note: "F5", freq: 698.46, key: "'" },
+      { note: "F#5", freq: 739.99 },
+      { note: "G5", freq: 783.99 },
+      { note: "G#5", freq: 830.61 },
+      { note: "A5", freq: 880.00 },
+      { note: "A#5", freq: 932.33 },
+      { note: "B5", freq: 987.77 },
+    ];
+
+    const piano = document.getElementById("piano");
+    const keyMap = {};
+    let whiteLeft = 0;
+
+    notes.forEach((n) => {
+      const isSharp = n.note.includes("#");
+      const key = document.createElement("div");
+      key.className = "key" + (isSharp ? " black" : " white");
+      key.dataset.note = n.note;
+      key.dataset.freq = n.freq;
+      if (n.key) key.dataset.key = n.key;
+
+      // Text label with note and key
+      key.innerHTML = `${n.note.replace(/\d/, "")}<br><span class="label">${n.key?.toUpperCase() || ""}</span>`;
+
+      if (isSharp) {
+        key.style.left = (whiteLeft - 15) + "px";
+      } else {
+        key.style.position = "relative";
+        whiteLeft += 51;
+      }
+
+      key.addEventListener("mousedown", () => playNote(key));
+      key.addEventListener("mouseup", () => key.classList.remove("active"));
+      key.addEventListener("mouseleave", () => key.classList.remove("active"));
+
+      if (n.key) {
+        keyMap[n.key] = key;
+      }
+
+      piano.appendChild(key);
+    });
+
+    function playNote(el) {
+      const freq = parseFloat(el.dataset.freq);
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+
+      gain.gain.setValueAtTime(1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1);
+      osc.stop(audioCtx.currentTime + 1);
+
+      el.classList.add("active");
+      setTimeout(() => el.classList.remove("active"), 200);
+    }
+
+    window.addEventListener("keydown", (e) => {
+      const key = e.key.toLowerCase();
+      if (keyMap[key]) {
+        playNote(keyMap[key]);
+      }
+    });
+  </script>
+</body>
+</html>

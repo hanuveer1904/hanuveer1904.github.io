@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tic Tac Toe</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --bg:#0b0f1a;
+  --panel:rgba(255,255,255,.08);
+  --border:rgba(255,255,255,.15);
+  --x:#6c8cff;
+  --o:#ff6b6b;
+  --win:#2ecc71;
+  --text:#eaeaff;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:system-ui,sans-serif;
+}
+
+body{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:radial-gradient(circle at top,#141b33,var(--bg));
+  color:var(--text);
+}
+
+.game{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:1.5rem;
+  width:320px;
+  text-align:center;
+  backdrop-filter:blur(12px);
+}
+
+h1{
+  margin-bottom:.5rem;
+}
+
+.status{
+  margin-bottom:1rem;
+  opacity:.85;
+}
+
+.board{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:.6rem;
+}
+
+.cell{
+  aspect-ratio:1;
+  background:rgba(0,0,0,.35);
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:2.5rem;
+  cursor:pointer;
+  transition:transform .15s ease, background .2s ease;
+}
+
+.cell:hover{
+  transform:scale(1.05);
+  background:rgba(255,255,255,.12);
+}
+
+.cell.x{ color:var(--x); }
+.cell.o{ color:var(--o); }
+.cell.win{ background:rgba(46,204,113,.25); }
+
+button{
+  margin-top:1.2rem;
+  padding:.6rem 1rem;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--text);
+  cursor:pointer;
+  transition:background .2s ease;
+}
+
+button:hover{
+  background:rgba(255,255,255,.12);
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+  <h1>❌ Tic Tac Toe ⭕</h1>
+  <div class="status" id="status">Player X's turn</div>
+
+  <div class="board" id="board"></div>
+
+  <button onclick="resetGame()">Restart</button>
+</div>
+
+<script>
+const boardEl = document.getElementById("board");
+const statusEl = document.getElementById("status");
+
+let board, current, active;
+
+const wins = [
+  [0,1,2],[3,4,5],[6,7,8],
+  [0,3,6],[1,4,7],[2,5,8],
+  [0,4,8],[2,4,6]
+];
+
+function init(){
+  board = Array(9).fill("");
+  current = "X";
+  active = true;
+  statusEl.textContent = "Player X's turn";
+  boardEl.innerHTML = "";
+
+  for(let i=0;i<9;i++){
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.dataset.i = i;
+    cell.onclick = handleMove;
+    boardEl.appendChild(cell);
+  }
+}
+
+function handleMove(){
+  const i = this.dataset.i;
+  if(!active || board[i]) return;
+
+  board[i] = current;
+  this.textContent = current;
+  this.classList.add(current.toLowerCase());
+
+  if(checkWin()){
+    statusEl.textContent = `Player ${current} wins!`;
+    active = false;
+    return;
+  }
+
+  if(board.every(c=>c)){
+    statusEl.textContent = "It's a draw!";
+    active = false;
+    return;
+  }
+
+  current = current === "X" ? "O" : "X";
+  statusEl.textContent = `Player ${current}'s turn`;
+}
+
+function checkWin(){
+  for(const combo of wins){
+    const [a,b,c] = combo;
+    if(board[a] && board[a]===board[b] && board[a]===board[c]){
+      highlight(combo);
+      return true;
+    }
+  }
+  return false;
+}
+
+function highlight(combo){
+  combo.forEach(i=>{
+    boardEl.children[i].classList.add("win");
+  });
+}
+
+function resetGame(){
+  init();
+}
+
+init();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultimate Pro Clock & Timer Hub</title>
+<style>
+:root {
+  --w: 400px;
+  --bg1: #0b1a2b;
+  --bg2: #1a2b4b;
+  --accent: #00ffd6;
+  --accent2: #9a3bff;
+  --muted: rgba(255,255,255,0.7);
+  --card: rgba(255,255,255,0.04);
+  --glass: rgba(255,255,255,0.06);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter,system-ui;display:flex;justify-content:center;align-items:center;background:linear-gradient(135deg,var(--bg1),var(--bg2));overflow:hidden}
+.widget{width:var(--w);background:linear-gradient(180deg,var(--card),transparent);backdrop-filter:blur(10px);border-radius:18px;padding:18px;position:relative;user-select:none;box-shadow:0 12px 40px rgba(0,0,0,0.6)}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-weight:800;color:#021019}
+.title{font-size:14px;font-weight:700}
+.subtitle{font-size:12px;color:var(--muted)}
+.row{display:flex;gap:12px;align-items:center}
+.digital{flex:1;padding:12px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.02));position:relative;overflow:hidden}
+.flip-wrap{display:flex;gap:6px;justify-content:center;align-items:center}
+.flip{width:46px;height:62px;background:linear-gradient(180deg,rgba(0,0,0,0.08),rgba(255,255,255,0.02));border-radius:6px;position:relative;perspective:600px}
+.flip .card{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;font-size:36px;font-weight:800;color:var(--accent);text-shadow:0 6px 20px rgba(0,255,214,0.06)}
+.flip .card.back{transform-origin:top;transform:rotateX(180deg);}
+.flip.flip-anim .card.front{animation:flipFront 400ms ease forwards}
+.flip.flip-anim .card.back{animation:flipBack 400ms ease forwards}
+@keyframes flipFront{0%{transform:rotateX(0)}100%{transform:rotateX(-180deg)}}
+@keyframes flipBack{0%{transform:rotateX(180deg)}100%{transform:rotateX(0deg)}}
+.ampm{font-size:12px;color:var(--muted);margin-left:6px}
+.date{font-size:12px;color:var(--muted);margin-top:6px;text-align:center}
+</style>
+</head>
+<body>
+<div class="widget" id="widget">
+  <div class="header">
+    <div class="brand">
+      <div class="logo">UP</div>
+      <div>
+        <div class="title">Ultimate Pro Clock</div>
+        <div class="subtitle">Offline • Alarms • Pomodoro • Stopwatch</div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="digital" id="digital">
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px">
+        <div class="flip-wrap" id="flipContainer"></div>
+        <div class="ampm" id="ampm">AM</div>
+      </div>
+      <div class="date" id="date"></div>
+    </div>
+  </div>
+</div>
+<script>
+const flipContainer=document.getElementById('flipContainer');
+const ampmEl=document.getElementById('ampm');
+const dateEl=document.getElementById('date');
+const digits=[];
+function createFlipDigits(){
+  flipContainer.innerHTML='';
+  ['H1','H2',':','M1','M2',':','S1','S2'].forEach(ch=>{
+    if(ch===':'){
+      const c=document.createElement('div');c.style.width='10px';c.style.textAlign='center';c.style.fontSize='24px';c.style.color='var(--muted)';c.textContent=':';flipContainer.appendChild(c);return;
+    }
+    const f=document.createElement('div');f.className='flip';
+    const front=document.createElement('div');front.className='card front';front.textContent='0';
+    const back=document.createElement('div');back.className='card back';back.textContent='0';
+    f.appendChild(front);f.appendChild(back);
+    flipContainer.appendChild(f);
+    digits.push({el:f,front,back});
+  });
+}
+createFlipDigits();
+function setFlip(idx,val){
+  const d=digits[idx];if(!d)return;
+  const cur=d.front.textContent;if(cur===val)return;
+  d.back.textContent=val;
+  d.el.classList.remove('flip-anim');void d.el.offsetWidth;
+  d.el.classList.add('flip-anim');
+  setTimeout(()=>{d.front.textContent=val;d.el.classList.remove('flip-anim')},400);
+}
+function updateClock(){
+  const now=new Date();
+  let hh=now.getHours(),mm=now.getMinutes(),ss=now.getSeconds();
+  const ap=hh>=12?'PM':'AM';
+  ampmEl.textContent=ap;
+  const dh=(hh%12)||12;
+  const hStr=String(dh).padStart(2,'0');
+  const mStr=String(mm).padStart(2,'0');
+  const sStr=String(ss).padStart(2,'0');
+  setFlip(0,hStr[0]);setFlip(1,hStr[1]);setFlip(2,mStr[0]);setFlip(3,mStr[1]);setFlip(4,sStr[0]);setFlip(5,sStr[1]);
+  dateEl.textContent=now.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+}
+setInterval(updateClock,250);updateClock();
+</script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dice & Coin Roller</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{
+  background:#0b0f1a;
+  color:#0f0;
+  font-family:monospace;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+  margin:0;
+}
+
+.container{
+  background:#111;
+  padding:20px;
+  border-radius:16px;
+  width:320px;
+  box-shadow:0 0 40px rgba(0,255,0,.2);
+  text-align:center;
+}
+
+h2{
+  margin-top:0;
+  margin-bottom:15px;
+}
+
+button{
+  padding:10px 16px;
+  font-size:16px;
+  border:none;
+  border-radius:8px;
+  background:#222;
+  color:#0f0;
+  cursor:pointer;
+  margin:6px;
+}
+
+button:hover{
+  background:#0a0;
+  color:#000;
+}
+
+#output{
+  margin-top:15px;
+  min-height:50px;
+  font-size:16px;
+  word-wrap:break-word;
+  background:#000;
+  padding:10px;
+  border-radius:8px;
+}
+
+input[type="number"]{
+  width:60px;
+  border:none;
+  border-radius:6px;
+  background:#000;
+  color:#0f0;
+  font-size:16px;
+  text-align:center;
+  margin-left:8px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Dice & Coin Roller</h2>
+
+  <div>
+    <button onclick="rollDice()">Roll Dice</button>
+    <label>
+      Sides: <input type="number" id="sides" value="6" min="2">
+    </label>
+  </div>
+
+  <div>
+    <button onclick="tossCoin()">Toss Coin</button>
+  </div>
+
+  <button onclick="clearOutput()">Clear</button>
+
+  <div id="output">Results will appear here...</div>
+</div>
+
+<script>
+const output = document.getElementById("output");
+
+function rollDice(){
+  const sides = parseInt(document.getElementById("sides").value) || 6;
+  const result = Math.floor(Math.random() * sides) + 1;
+  output.textContent = `🎲 You rolled: ${result} (1-${sides})`;
+}
+
+function tossCoin(){
+  const result = Math.random() < 0.5 ? "Heads 🟢" : "Tails 🔴";
+  output.textContent = `🪙 Coin toss: ${result}`;
+}
+
+function clearOutput(){
+  output.textContent = "Results will appear here...";
+}
+</script>
+
+</body>
+</html>

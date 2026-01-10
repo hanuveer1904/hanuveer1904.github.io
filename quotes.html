@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Random Quote Generator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{
+  background:#0b0f1a;
+  color:#0f0;
+  font-family:monospace;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+  margin:0;
+}
+
+.container{
+  background:#111;
+  padding:20px 25px;
+  border-radius:16px;
+  width:400px;
+  box-shadow:0 0 40px rgba(0,255,0,.2);
+  text-align:center;
+}
+
+h2{
+  margin-top:0;
+  margin-bottom:15px;
+}
+
+#quote{
+  min-height:80px;
+  font-size:16px;
+  word-wrap:break-word;
+  background:#000;
+  padding:12px;
+  border-radius:8px;
+  margin-bottom:12px;
+}
+
+button{
+  padding:10px 16px;
+  font-size:16px;
+  border:none;
+  border-radius:8px;
+  background:#222;
+  color:#0f0;
+  cursor:pointer;
+}
+
+button:hover{
+  background:#0a0;
+  color:#000;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Random Quote Generator</h2>
+  <div id="quote">Click generate to get a quote!</div>
+  <button onclick="generateQuote()">Generate Quote</button>
+</div>
+
+<script>
+const quotes = [
+"Believe you can and you're halfway there.",
+"Your limitation—it’s only your imagination.",
+"Push yourself, because no one else is going to do it for you.",
+"Great things never come from comfort zones.",
+"Dream it. Wish it. Do it.",
+"Success doesn’t just find you. You have to go out and get it.",
+"The harder you work for something, the greater you'll feel when you achieve it.",
+"Don’t stop when you’re tired. Stop when you’re done.",
+"Wake up with determination. Go to bed with satisfaction.",
+"Do something today that your future self will thank you for.",
+"Little things make big days.",
+"It’s going to be hard, but hard does not mean impossible.",
+"Don’t wait for opportunity. Create it.",
+"Sometimes we’re tested not to show our weaknesses, but to discover our strengths.",
+"The key to success is to focus on goals, not obstacles.",
+"Dream bigger. Do bigger.",
+"Don’t quit. Suffer now and live the rest of your life as a champion.",
+"Wake up determined. Go to bed satisfied.",
+"Don’t watch the clock; do what it does. Keep going.",
+"The secret of getting ahead is getting started.",
+"Great things never came from comfort zones.",
+"Push yourself, because no one else is going to do it for you.",
+"Failure is not the opposite of success; it’s part of success.",
+"Success is not for the lazy.",
+"Hard work beats talent when talent doesn’t work hard.",
+"Be a voice, not an echo.",
+"Your only limit is your mind.",
+"Do what you can with what you have, where you are.",
+"Strive for progress, not perfection.",
+"The expert in anything was once a beginner.",
+"Work hard in silence, let success make the noise.",
+"The best way to predict your future is to create it.",
+"Don’t stop until you’re proud.",
+"Fall seven times and stand up eight.",
+"Motivation is what gets you started. Habit is what keeps you going.",
+"Success is what comes after you stop making excuses.",
+"Don’t tell people your plans. Show them your results.",
+"Start where you are. Use what you have. Do what you can.",
+"Success doesn’t come from what you do occasionally, it comes from what you do consistently.",
+"Small daily improvements over time lead to stunning results.",
+"Don’t let yesterday take up too much of today.",
+"The best time to plant a tree was 20 years ago. The second best time is now.",
+"You don’t have to be great to start, but you have to start to be great.",
+"Little progress is still progress.",
+"The difference between ordinary and extraordinary is that little extra.",
+"Success is walking from failure to failure with no loss of enthusiasm.",
+"The pain you feel today will be the strength you feel tomorrow.",
+"Don’t wait. The time will never be just right.",
+"Focus on being productive instead of busy.",
+"The harder you work, the luckier you get.",
+"You are capable of amazing things.",
+"Believe in yourself and all that you are.",
+"Opportunities don’t happen. You create them.",
+"Don’t limit your challenges. Challenge your limits.",
+"Success is not in what you have, but who you are.",
+"Life is short. Do stuff that matters.",
+"The only way to achieve the impossible is to believe it is possible.",
+"Don’t be pushed around by the fears in your mind.",
+"Turn your wounds into wisdom.",
+"The best revenge is massive success.",
+"Action is the foundational key to all success.",
+"The future depends on what you do today.",
+"Your life does not get better by chance, it gets better by change.",
+"Failure is simply the opportunity to begin again.",
+"Don’t count the days, make the days count.",
+"Success usually comes to those who are too busy to be looking for it.",
+"Don’t watch the clock; do what it does. Keep going.",
+"The way to get started is to quit talking and begin doing.",
+"Quality is not an act, it is a habit.",
+"Work until your idols become your rivals.",
+"Impossible is just an opinion.",
+"Do what is right, not what is easy.",
+"Excuses are the nails used to build a house of failure.",
+"Don’t limit yourself.",
+"Believe you can and you’re halfway there.",
+"Life is 10% what happens to us and 90% how we react to it.",
+"If you’re going through hell, keep going.",
+"The difference between who you are and who you want to be is what you do.",
+"Don’t stop when you’re tired. Stop when you’re done.",
+"Little minds are tamed and subdued by misfortune; but great minds rise above it.",
+"Success isn’t just about what you accomplish, it’s about what you inspire others to do.",
+"Great things take time.",
+"Be so good they can’t ignore you.",
+"Dream it. Believe it. Build it.",
+"Discipline is the bridge between goals and accomplishment.",
+"Opportunities don’t happen, you create them.",
+"The harder the conflict, the greater the triumph.",
+"Motivation is temporary. Habit is permanent.",
+"Don’t fear failure. Fear being in the exact same place next year as you are today.",
+"Success is not final, failure is not fatal: It is the courage to continue that counts.",
+"The only limit to our realization of tomorrow is our doubts of today.",
+"The purpose of our lives is to be happy.",
+"Your time is limited, so don’t waste it living someone else’s life.",
+"Keep your face always toward the sunshine—and shadows will fall behind you."
+];
+
+function generateQuote(){
+  const quote = quotes[Math.floor(Math.random() * quotes.length)];
+  document.getElementById("quote").textContent = quote;
+}
+</script>
+
+</body>
+</html>

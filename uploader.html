@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#020617" />
+<title>Waste Wise Scanne(Inspired)</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+
+<style>
+:root{
+  --bg1:#0f172a;
+  --bg2:#020617;
+  --card:#020617ee;
+  --accent:#38bdf8;
+  --accent-soft:#38bdf833;
+  --danger:#ef4444;
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  min-height:100svh;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+  color:var(--text);
+  background:
+    radial-gradient(900px 500px at 10% -10%, #1e3a8a33, transparent),
+    radial-gradient(700px 400px at 90% 10%, #0369a133, transparent),
+    linear-gradient(180deg,var(--bg1),var(--bg2));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:14px;
+}
+
+.container{
+  width:100%;
+  max-width:1000px;
+  background:linear-gradient(180deg,#020617dd,#020617ee);
+  border-radius:18px;
+  border:1px solid #1f2937;
+  box-shadow:0 20px 60px #00000070;
+  padding:16px;
+}
+
+h1{
+  margin:0 0 14px;
+  font-size:20px;
+  font-weight:700;
+  text-align:center;
+}
+
+.main{display:flex; gap:18px}
+
+@media (min-width:820px){.main{flex-direction:row}}
+@media (max-width:819px){.main{flex-direction:column}}
+
+#webcam-container{
+  width:100%;
+  max-width:360px;
+  aspect-ratio:1/1;
+  margin:auto;
+  background:#020617;
+  border-radius:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:inset 0 0 0 1px #1f2937;
+}
+
+#webcam-container canvas{
+  width:100%;
+  height:100%;
+  border-radius:18px;
+  object-fit:cover;
+}
+
+.running #webcam-container{
+  box-shadow:inset 0 0 0 1px #1f2937,0 0 24px var(--accent-soft);
+}
+
+#controls{flex:1; width:100%}
+
+.buttons{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+
+button{
+  border:0;
+  border-radius:12px;
+  padding:12px 10px;
+  font-weight:700;
+  font-size:15px;
+  cursor:pointer;
+  background:linear-gradient(180deg,#7dd3fc,#38bdf8);
+  color:#020617;
+  box-shadow:0 6px 18px #38bdf840;
+}
+
+button.secondary{
+  background:#1f2937;
+  color:var(--text);
+  box-shadow:inset 0 0 0 1px #374151;
+}
+
+.small{margin-top:10px;font-size:13px;color:var(--muted)}
+
+select{
+  margin-top:6px;
+  width:100%;
+  padding:10px;
+  font-size:14px;
+  border-radius:10px;
+  background:#020617;
+  color:var(--text);
+  border:1px solid #1f2937;
+}
+.link-box{
+  margin:8px 0 14px;
+  font-size:.9rem;
+  color:#9ca3af;
+}
+
+.link-box a{
+  color:#38bdf8;
+  text-decoration:none;
+  font-weight:600;
+}
+
+.link-box a:hover{
+  text-decoration:underline;
+}
+
+#label-container{margin-top:14px}
+.pred{margin-bottom:12px}
+.pred-title{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px}
+.bar{height:10px;background:#020617;border-radius:999px;overflow:hidden;box-shadow:inset 0 0 0 1px #1f2937}
+.bar span{display:block;height:100%;width:0%;background:linear-gradient(90deg,#38bdf8,#22d3ee);border-radius:999px;transition:width .25s ease}
+
+#snapshot{margin-top:12px;width:100%;max-width:360px;border-radius:16px;display:none}
+#status{margin-top:6px;font-size:13px;color:var(--muted)}
+.error{color:var(--danger);font-size:13px;margin-top:6px}
+footer{margin-top:14px;font-size:12px;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>♻️ WasteWise Scanner</h1>
+<div class="main">
+<div id="webcam-container"></div>
+<div id="controls">
+<div class="buttons">
+<button id="start-btn">Start</button>
+<button id="stop-btn" class="secondary">Stop</button>
+<button id="snap-btn" class="secondary">Snapshot</button>
+</div>
+<div class="small">Model: Teachable Machine</div>
+<div class="link-box">
+  Image upload version:
+  <a href="scanner.html" target="_blank">
+    hanuveer1904.github.io/wasteimgscanner
+  </a>
+</div>
+
+<div id="label-container"></div>
+<div class="small">Camera</div>
+<select id="camera-select"></select>
+<div id="status"></div>
+<div id="err" class="error"></div>
+<canvas id="snapshot" width="320" height="320"></canvas>
+</div>
+</div>
+<footer>Installable • Offline-ready • Desktop & Mobile</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+
+<script>
+// ================= CONFIG =================
+const MODEL_BASE_URL = "https://teachablemachine.withgoogle.com/models/MMWdfkB47/";
+const FPS_LIMIT = 12;
+let lastFrame = 0;
+
+// ================= UI =================
+const startBtn = document.getElementById("start-btn");
+const stopBtn = document.getElementById("stop-btn");
+const snapBtn = document.getElementById("snap-btn");
+const labelContainer = document.getElementById("label-container");
+const webcamContainer = document.getElementById("webcam-container");
+const cameraSelect = document.getElementById("camera-select");
+const status = document.getElementById("status");
+const errDiv = document.getElementById("err");
+const snapshotCanvas = document.getElementById("snapshot");
+const snapCtx = snapshotCanvas.getContext("2d");
+
+let model, webcam, isRunning=false;
+
+// ================= MODEL =================
+async function loadModel(){
+  status.innerText="Loading model...";
+  model = await tmImage.load(MODEL_BASE_URL+"model.json", MODEL_BASE_URL+"metadata.json");
+  labelContainer.innerHTML="";
+  model.getTotalClasses();
+  for(let i=0;i<model.getTotalClasses();i++){
+    const d=document.createElement("div");
+    d.className="pred";
+    d.innerHTML=`<div class=\"pred-title\"><span>Waiting…</span><span>0%</span></div><div class=\"bar\"><span></span></div>`;
+    labelContainer.appendChild(d);
+  }
+  status.innerText="Model loaded.";
+}
+
+// ================= CAMERA =================
+async function populateCameras(){
+  const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+  s.getTracks().forEach(t=>t.stop());
+  const cams=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==="videoinput");
+  cameraSelect.innerHTML="";
+  cams.forEach((c,i)=>{
+    const o=document.createElement("option");
+    o.value=c.deviceId;
+    o.text=c.label||`Camera ${i+1}`;
+    cameraSelect.appendChild(o);
+  });
+}
+
+async function startWebcam(deviceId=null){
+  webcam=new tmImage.Webcam(320,320,true);
+  await webcam.setup(deviceId?{deviceId:{exact:deviceId}}:{facingMode:"environment"});
+  await webcam.play();
+  webcamContainer.innerHTML="";
+  webcamContainer.appendChild(webcam.canvas);
+  document.body.classList.add("running");
+  isRunning=true;
+  requestAnimationFrame(loop);
+}
+
+async function stopWebcam(){
+  if(!webcam)return;
+  await webcam.stop();
+  webcamContainer.innerHTML="";
+  document.body.classList.remove("running");
+  isRunning=false;
+  status.innerText="Camera stopped.";
+}
+
+// ================= LOOP =================
+async function loop(ts){
+  if(!isRunning)return;
+  if(ts-lastFrame>1000/FPS_LIMIT){
+    lastFrame=ts;
+    webcam.update();
+    await predict();
+  }
+  requestAnimationFrame(loop);
+}
+
+async function predict(){
+  const preds=await model.predict(webcam.canvas);
+  preds.forEach((p,i)=>{
+    const el=labelContainer.children[i];
+    el.querySelector(".pred-title span:first-child").innerText=p.className;
+    el.querySelector(".pred-title span:last-child").innerText=(p.probability*100).toFixed(1)+"%";
+    el.querySelector(".bar span").style.width=(p.probability*100)+"%";
+  });
+}
+
+function takeSnapshot(){
+  snapCtx.drawImage(webcam.canvas,0,0,320,320);
+  snapshotCanvas.style.display="block";
+}
+
+// ================= EVENTS =================
+startBtn.onclick=async()=>{
+  errDiv.innerText="";
+  if(!model) await loadModel();
+  await populateCameras();
+  await startWebcam(cameraSelect.value||null);
+  status.innerText="Camera running.";
+};
+
+stopBtn.onclick=stopWebcam;
+snapBtn.onclick=takeSnapshot;
+
+cameraSelect.onchange=async()=>{
+  if(!isRunning)return;
+  await stopWebcam();
+  await startWebcam(cameraSelect.value);
+};
+
+// ================= PWA =================
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js');
+}
+
+loadModel().catch(()=>{});
+</script>
+</body>
+</html>

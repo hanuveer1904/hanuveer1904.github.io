@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Website Opener</title>
+
+<style>
+:root {
+    --bg-start: #004d40;
+    --bg-end: #26a69a;
+    --primary: #00796b;
+    --primary-dark: #004d40;
+    --white: #ffffff;
+    --radius: 12px;
+    --transition: 0.3s ease;
+    --shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(to right, var(--bg-start), var(--bg-end));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+}
+
+/* ================= PRELOADER ================= */
+.preloader {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-start);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    color: #fff;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.preloader.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.progress-bar {
+    width: min(80%, 400px);
+    height: 10px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 15px;
+}
+
+.progress {
+    height: 100%;
+    width: 0%;
+    background: var(--bg-end);
+    transition: width 0.25s ease;
+}
+
+/* ================= MAIN CONTAINER ================= */
+.container {
+    background: var(--white);
+    width: 90%;
+    max-width: 900px;
+    padding: 30px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    opacity: 0;
+    transform: translateY(15px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.container.loaded {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.heading {
+    text-align: center;
+    font-size: 36px;
+    color: var(--primary);
+    margin-bottom: 25px;
+}
+
+/* ================= SECTIONS ================= */
+.sections-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.section {
+    border: 2px solid var(--primary);
+    border-radius: var(--radius);
+    padding: 15px;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 12px;
+}
+
+/* ================= BUTTONS ================= */
+.button-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.btn {
+    padding: 12px;
+    border: none;
+    border-radius: 999px;
+    background: var(--primary);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--transition), transform var(--transition);
+}
+
+.btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: scale(0.97);
+}
+
+/* ================= WATERMARK ================= */
+.watermark {
+    position: fixed;
+    bottom: 10px;
+    right: 15px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    pointer-events: none;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 500px) {
+    .heading {
+        font-size: 28px;
+    }
+    .button-container {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- PRELOADER -->
+<div class="preloader" id="preloader">
+    <div>Loading <span id="progressText">0%</span></div>
+    <div class="progress-bar">
+        <div class="progress" id="progressBar"></div>
+    </div>
+    <div class="watermark">Website Opener</div>
+</div>
+
+<!-- MAIN -->
+<div class="container" id="mainContent">
+    <h1 class="heading">Website Opener</h1>
+    <div class="sections-container" id="websiteGroups"></div>
+</div>
+
+<div class="watermark">Website Opener</div>
+
+<script>
+(() => {
+    const progressText = document.getElementById("progressText");
+    const progressBar = document.getElementById("progressBar");
+    const preloader = document.getElementById("preloader");
+    const mainContent = document.getElementById("mainContent");
+    const websiteGroups = document.getElementById("websiteGroups");
+
+    const websiteCategories = {
+        "Social Media": [
+            ["Facebook","https://facebook.com"],
+            ["Twitter","https://twitter.com"],
+            ["Instagram","https://instagram.com"],
+            ["LinkedIn","https://linkedin.com"],
+            ["Reddit","https://reddit.com"]
+        ],
+        "Web Streaming": [
+            ["YouTube","https://youtube.com"],
+            ["Netflix","https://netflix.com"],
+            ["Prime Video","https://primevideo.com"],
+            ["Hulu","https://hulu.com"],
+            ["Disney+","https://disneyplus.com"]
+        ],
+        "Home Pages": [
+            ["Google","https://google.com"],
+            ["Bing","https://bing.com"],
+            ["DuckDuckGo","https://duckduckgo.com"]
+        ],
+        "Gaming": [
+            ["Poki","https://poki.com"],
+            ["CrazyGames","https://crazygames.com"],
+            ["Venge","https://venge.io"],
+            ["SmashKarts","https://smashkarts.io"],
+            ["Krunker","https://krunker.io"]
+        ],
+        "Utilities": [
+            ["ChatGPT","https://chatgpt.com"],
+            ["W3Schools","https://w3schools.com"],
+            ["Gmail","https://mail.google.com"],
+            ["Google Maps","https://maps.google.com"]
+        ],
+        "Other Creations": [
+            ["JavaScript AI","https://hanuveer1904.github.io"],
+            ["Calculator","https://hanuveer1904.github.io/calculator"]
+        ]
+    };
+
+    function updateProgress(value) {
+        progressText.textContent = value + "%";
+        progressBar.style.width = value + "%";
+    }
+
+    function animateLoading() {
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.floor(Math.random() * 8) + 5;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+                setTimeout(() => {
+                    preloader.classList.add("hidden");
+                    mainContent.classList.add("loaded");
+                }, 300);
+            }
+            updateProgress(progress);
+        }, 150);
+    }
+
+    function buildUI() {
+        const fragment = document.createDocumentFragment();
+
+        for (const category in websiteCategories) {
+            const section = document.createElement("div");
+            section.className = "section";
+
+            const title = document.createElement("div");
+            title.className = "section-title";
+            title.textContent = category;
+
+            const btnWrap = document.createElement("div");
+            btnWrap.className = "button-container";
+
+            websiteCategories[category].forEach(([name, url]) => {
+                const btn = document.createElement("button");
+                btn.className = "btn";
+                btn.textContent = name;
+                btn.onclick = () => window.open(url, "_blank");
+                btnWrap.appendChild(btn);
+            });
+
+            section.append(title, btnWrap);
+            fragment.appendChild(section);
+        }
+
+        websiteGroups.appendChild(fragment);
+    }
+
+    window.addEventListener("load", () => {
+        animateLoading();
+        buildUI();
+    });
+})();
+</script>
+
+</body>
+</html>

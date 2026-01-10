@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Aim Trainer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --bg:#0b0f1a;
+  --panel:rgba(255,255,255,.08);
+  --border:rgba(255,255,255,.15);
+  --text:#eaeaff;
+  --accent:#6c8cff;
+  --bad:#ff6b6b;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:system-ui,sans-serif;
+}
+
+body{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:radial-gradient(circle at top,#141b33,var(--bg));
+  color:var(--text);
+}
+
+.game{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:1.5rem;
+  width:360px;
+  text-align:center;
+  backdrop-filter:blur(12px);
+}
+
+h1{
+  margin-bottom:.5rem;
+}
+
+.stats{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:1rem;
+  font-size:.9rem;
+  opacity:.9;
+}
+
+.area{
+  position:relative;
+  width:100%;
+  height:260px;
+  background:rgba(0,0,0,.35);
+  border-radius:16px;
+  overflow:hidden;
+  cursor:crosshair;
+}
+
+.target{
+  position:absolute;
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  background:var(--accent);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:transform .1s ease;
+}
+
+.target:active{
+  transform:scale(.9);
+}
+
+button{
+  margin-top:1rem;
+  width:100%;
+  padding:.6rem;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--text);
+  cursor:pointer;
+}
+
+button:hover{
+  background:rgba(255,255,255,.12);
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+  <h1>🎯 Aim Trainer</h1>
+
+  <div class="stats">
+    <span>Hits: <b id="hits">0</b></span>
+    <span>Misses: <b id="misses">0</b></span>
+    <span>Time: <b id="time">30</b>s</span>
+  </div>
+
+  <div class="area" id="area"></div>
+
+  <button onclick="start()">Start / Restart</button>
+</div>
+
+<script>
+const area = document.getElementById("area");
+const hitsEl = document.getElementById("hits");
+const missEl = document.getElementById("misses");
+const timeEl = document.getElementById("time");
+
+let hits = 0;
+let misses = 0;
+let time = 30;
+let timer;
+let active = false;
+let target;
+
+function start(){
+  clearInterval(timer);
+  area.innerHTML = "";
+  hits = misses = 0;
+  time = 30;
+  active = true;
+
+  hitsEl.textContent = hits;
+  missEl.textContent = misses;
+  timeEl.textContent = time;
+
+  spawn();
+  timer = setInterval(tick,1000);
+}
+
+function spawn(){
+  if(!active) return;
+  if(target) target.remove();
+
+  target = document.createElement("div");
+  target.className = "target";
+
+  const size = 44;
+  const maxX = area.clientWidth - size;
+  const maxY = area.clientHeight - size;
+
+  target.style.left = Math.random()*maxX + "px";
+  target.style.top = Math.random()*maxY + "px";
+
+  target.onclick = e => {
+    e.stopPropagation();
+    hits++;
+    hitsEl.textContent = hits;
+    spawn();
+  };
+
+  area.appendChild(target);
+}
+
+area.onclick = ()=>{
+  if(!active) return;
+  misses++;
+  missEl.textContent = misses;
+};
+
+function tick(){
+  time--;
+  timeEl.textContent = time;
+  if(time<=0){
+    end();
+  }
+}
+
+function end(){
+  active = false;
+  clearInterval(timer);
+  if(target) target.remove();
+  setTimeout(()=>{
+    alert(
+      `Time's up!\nHits: ${hits}\nMisses: ${misses}\nAccuracy: ${
+        hits+misses?Math.round(hits/(hits+misses)*100):0
+      }%`
+    );
+  },100);
+}
+</script>
+
+</body>
+</html>

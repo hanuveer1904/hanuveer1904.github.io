@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #282c34;
+        }
+
+        /* Calculator Styles */
+        .calculator {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            background: #333;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .display {
+            grid-row: 1;
+            background: #282c34;
+            color: #61dafb;
+            font-size: 2em;
+            padding: 20px;
+            text-align: right;
+        }
+
+        .buttons {
+            grid-row: 2;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 20px;
+            background: #444;
+        }
+
+        button {
+            background: #61dafb;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.5em;
+            color: #282c34;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: #51a8d1;
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Calculator -->
+    <div class="calculator" id="calculator">
+        <div class="display" id="display">0</div>
+        <div class="buttons">
+            <button onclick="clearDisplay()">C</button>
+            <button onclick="deleteLast()">DEL</button>
+            <button onclick="appendToDisplay('/')">÷</button>
+            <button onclick="appendToDisplay('*')">×</button>
+            <button onclick="appendToDisplay('7')">7</button>
+            <button onclick="appendToDisplay('8')">8</button>
+            <button onclick="appendToDisplay('9')">9</button>
+            <button onclick="appendToDisplay('-')">−</button>
+            <button onclick="appendToDisplay('4')">4</button>
+            <button onclick="appendToDisplay('5')">5</button>
+            <button onclick="appendToDisplay('6')">6</button>
+            <button onclick="appendToDisplay('+')">+</button>
+            <button onclick="appendToDisplay('1')">1</button>
+            <button onclick="appendToDisplay('2')">2</button>
+            <button onclick="appendToDisplay('3')">3</button>
+            <button onclick="calculate()">=</button>
+            <button onclick="appendToDisplay('0')">0</button>
+            <button onclick="appendToDisplay('.')">.</button>
+        </div>
+    </div>
+
+    <script>
+        // Calculator functions
+        let display = document.getElementById("display");
+
+        function appendToDisplay(value) {
+            if (display.innerText === "0") display.innerText = "";
+            display.innerText += value;
+        }
+
+        function clearDisplay() {
+            display.innerText = "0";
+        }
+
+        function deleteLast() {
+            display.innerText = display.innerText.slice(0, -1) || "0";  // Ensure it doesn't go below 0
+        }
+
+        function calculate() {
+            try {
+                // Using 'eval' for simplicity, replace ÷ and × with standard operators
+                display.innerText = eval(display.innerText.replace("÷", "/").replace("×", "*")) || "0";
+            } catch {
+                display.innerText = "Error";  // In case of invalid operation
+            }
+        }
+    </script>
+
+</body>
+</html>
