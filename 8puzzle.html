@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>8 Puzzle</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --bg:#0b0f1a;
+  --panel:rgba(255,255,255,.08);
+  --border:rgba(255,255,255,.15);
+  --text:#eaeaff;
+  --accent:#6c8cff;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:system-ui,sans-serif;
+}
+
+body{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:radial-gradient(circle at top,#141b33,var(--bg));
+  color:var(--text);
+}
+
+.game{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:1.2rem;
+  text-align:center;
+  backdrop-filter:blur(12px);
+  width:300px;
+}
+
+h1{
+  margin-bottom:.6rem;
+}
+
+.board{
+  display:grid;
+  grid-template-columns:repeat(3, 80px);
+  grid-template-rows:repeat(3, 80px);
+  gap:6px;
+  justify-content:center;
+  margin:1rem 0;
+}
+
+.tile{
+  background:rgba(255,255,255,.15);
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.5rem;
+  font-weight:bold;
+  cursor:pointer;
+  user-select:none;
+  transition:transform .1s ease, background .2s;
+}
+
+.tile:hover{
+  background:rgba(255,255,255,.25);
+}
+
+.tile.empty{
+  background:transparent;
+  cursor:default;
+}
+
+.info{
+  font-size:.9rem;
+  opacity:.9;
+}
+
+button{
+  margin-top:.7rem;
+  padding:.45rem 1rem;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--text);
+  cursor:pointer;
+}
+
+button:hover{
+  background:rgba(255,255,255,.12);
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+  <h1>🧩 8 Puzzle</h1>
+
+  <div class="board" id="board"></div>
+
+  <div class="info">
+    Moves: <b id="moves">0</b>
+  </div>
+
+  <button onclick="start()">Restart</button>
+</div>
+
+<script>
+const boardEl = document.getElementById("board");
+const movesEl = document.getElementById("moves");
+
+let tiles = [];
+let moves = 0;
+
+function start(){
+  moves = 0;
+  movesEl.textContent = moves;
+  tiles = generateSolvable();
+  render();
+}
+
+function render(){
+  boardEl.innerHTML = "";
+  tiles.forEach((v,i)=>{
+    const d = document.createElement("div");
+    d.className = "tile" + (v === 0 ? " empty" : "");
+    d.textContent = v === 0 ? "" : v;
+
+    d.onclick = ()=>{
+      if(canMove(i)){
+        move(i);
+      }
+    };
+
+    boardEl.appendChild(d);
+  });
+}
+
+function canMove(i){
+  const e = tiles.indexOf(0);
+  const x1 = i % 3, y1 = Math.floor(i / 3);
+  const x2 = e % 3, y2 = Math.floor(e / 3);
+  return Math.abs(x1-x2) + Math.abs(y1-y2) === 1;
+}
+
+function move(i){
+  const e = tiles.indexOf(0);
+  [tiles[i], tiles[e]] = [tiles[e], tiles[i]];
+  moves++;
+  movesEl.textContent = moves;
+  render();
+  checkWin();
+}
+
+function checkWin(){
+  for(let i=0;i<8;i++){
+    if(tiles[i] !== i+1) return;
+  }
+  if(tiles[8] === 0){
+    setTimeout(()=>{
+      alert(`Solved in ${moves} moves!`);
+      start();
+    },100);
+  }
+}
+
+// --- Solvable shuffle ---
+function generateSolvable(){
+  let arr;
+  do{
+    arr = shuffle([1,2,3,4,5,6,7,8,0]);
+  }while(!isSolvable(arr));
+  return arr;
+}
+
+function shuffle(a){
+  return a.sort(()=>Math.random()-0.5);
+}
+
+function isSolvable(a){
+  let inv = 0;
+  for(let i=0;i<a.length;i++){
+    for(let j=i+1;j<a.length;j++){
+      if(a[i] && a[j] && a[i] > a[j]) inv++;
+    }
+  }
+  return inv % 2 === 0;
+}
+
+start();
+</script>
+
+</body>
+</html>

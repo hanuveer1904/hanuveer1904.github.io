@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE CORRIDOR</title>
+<style>
+  body{
+  margin:0;
+  background:#050507;
+  color:#eaeaff;
+  font-family:system-ui,sans-serif;
+}
+
+.screen{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:2rem;
+}
+
+.hidden{display:none}
+
+h1{
+  letter-spacing:4px;
+}
+
+#game{
+  max-width:900px;
+  margin:2rem auto;
+  padding:1rem;
+}
+
+#status{
+  display:flex;
+  justify-content:space-between;
+  font-size:.85rem;
+  color:#aaa;
+  margin-bottom:1rem;
+}
+
+#log{
+  background:#0e0e17;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;
+  padding:1.2rem;
+  min-height:200px;
+  margin-bottom:1rem;
+}
+
+#choices button{
+  display:block;
+  width:100%;
+  margin:.4rem 0;
+  padding:.7rem;
+  background:#111;
+  border:1px solid rgba(255,255,255,.1);
+  color:#fff;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+#choices button:hover{
+  background:#1b1b2a;
+}
+/* ================= RESET ================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+/* ================= ROOT ================= */
+:root {
+  --bg: #050507;
+  --panel: #0e0e17;
+  --panel-soft: rgba(255,255,255,0.03);
+  --border: rgba(255,255,255,0.08);
+
+  --text: #eaeaff;
+  --muted: rgba(234,234,255,0.6);
+
+  --danger: #ff5f5f;
+  --accent: #7b6dff;
+}
+
+/* ================= BODY ================= */
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(800px 300px at 50% -200px, rgba(123,109,255,.15), transparent 70%),
+    var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+}
+
+/* ================= INTRO SCREEN ================= */
+.screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2.5rem;
+}
+
+.screen h1 {
+  font-size: 2.6rem;
+  letter-spacing: 6px;
+  margin-bottom: 1.5rem;
+}
+
+.screen p {
+  max-width: 560px;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.screen label {
+  margin-top: 2rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.screen select {
+  margin-top: 0.6rem;
+  padding: 0.6rem 1rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+}
+
+.screen button {
+  margin-top: 2rem;
+  padding: 0.8rem 2rem;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--accent), #b8b1ff);
+  color: #050507;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.screen button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(123,109,255,.35);
+}
+
+/* ================= GAME LAYOUT ================= */
+.hidden {
+  display: none;
+}
+
+#game {
+  max-width: 900px;
+  margin: 3rem auto;
+  padding: 0 1.5rem;
+}
+
+/* ================= STATUS BAR ================= */
+#status {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* ================= STORY LOG ================= */
+#log {
+  background:
+    radial-gradient(600px 200px at top, rgba(123,109,255,.08), transparent 60%),
+    var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1.6rem 1.8rem;
+  min-height: 220px;
+  white-space: pre-line;
+  animation: fadeIn .35s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================= CHOICES ================= */
+#choices {
+  margin-top: 1.2rem;
+}
+
+#choices button {
+  width: 100%;
+  margin: 0.45rem 0;
+  padding: 0.85rem 1.2rem;
+  text-align: left;
+
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
+  color: var(--text);
+  font-size: 0.95rem;
+  cursor: pointer;
+
+  transition: background .25s ease, border .25s ease, transform .15s ease;
+}
+
+#choices button:hover {
+  background: rgba(123,109,255,.08);
+  border-color: rgba(123,109,255,.45);
+  transform: translateX(4px);
+}
+
+/* ================= DEATH EMPHASIS ================= */
+#log:has(+ #choices button:only-child) {
+  border-color: rgba(255,95,95,.45);
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 600px) {
+  #game {
+    margin-top: 2rem;
+  }
+
+  .screen h1 {
+    font-size: 2.1rem;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<div id="intro" class="screen">
+  <h1>THE CORRIDOR</h1>
+  <p>
+    You wake up in a silent structure.<br>
+    The air is cold. The lights hum weakly.<br>
+    Something else is here.<br><br>
+    You cannot fight it.<br>
+    You can only outthink it.
+  </p>
+
+  <label>Difficulty</label>
+  <select id="difficulty">
+    <option value="easy">Easy</option>
+    <option value="normal" selected>Normal</option>
+    <option value="hard">Hard</option>
+  </select>
+
+  <button onclick="startGame()">Begin</button>
+</div>
+
+<div id="game" class="hidden">
+  <div id="status">
+    <span id="zone"></span>
+    <span id="loop"></span>
+  </div>
+
+  <div id="log"></div>
+  <div id="choices"></div>
+</div>
+
+<script>const ZONES = [
+  "Far",
+  "Nearby",
+  "Same Area",
+  "Visible",
+  "Contact"
+];
+
+let state = {
+  scenario: 0,
+  zone: 0,
+  loop: 0,
+  difficulty: "normal",
+  alive: true
+};
+
+const difficultyRules = {
+  easy: { startZone: 0, hesitation: true },
+  normal: { startZone: 1, hesitation: false },
+  hard: { startZone: 2, hesitation: false }
+};
+
+const scenarios = [
+  { text:"You stand in a narrow corridor. The floor vibrates faintly.", choices:[
+    { text:"Move quietly forward", next:1 },
+    { text:"Run", danger:true, next:2 }
+  ]},
+
+  { text:"A junction splits left and right. The air feels stale.", choices:[
+    { text:"Go left", next:3 },
+    { text:"Go right", next:4 }
+  ]},
+
+  { text:"Your footsteps echo too loudly.", death:true },
+
+];
+
+// Fill up to 30 scenarios procedurally
+for(let i=scenarios.length;i<30;i++){
+  scenarios.push({
+    text:`Section ${i}. The structure groans softly.`,
+    choices:[
+      { text:"Proceed carefully", next:(i+1)%30 },
+      { text:"Hesitate", wait:true, next:(i+2)%30 }
+    ]
+  });
+}
+
+// Mark ~10 deaths
+[5,8,11,14,17,19,21,24,27].forEach(i=>{
+  scenarios[i].death = true;
+});
+
+function startGame(){
+  state.difficulty = document.getElementById("difficulty").value;
+  state.zone = difficultyRules[state.difficulty].startZone;
+  document.getElementById("intro").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+  render();
+}
+
+function render(){
+  const log = document.getElementById("log");
+  const choicesDiv = document.getElementById("choices");
+  const zoneText = document.getElementById("zone");
+  const loopText = document.getElementById("loop");
+
+  const sc = scenarios[state.scenario];
+
+  zoneText.textContent = "Entity: " + ZONES[state.zone];
+  loopText.textContent = "Loop: " + state.loop;
+
+  log.textContent = sc.text;
+  choicesDiv.innerHTML = "";
+
+  if(sc.death){
+    log.textContent += "\n\nThe presence reaches you.";
+    const btn = document.createElement("button");
+    btn.textContent = "Restart Loop";
+    btn.onclick = resetLoop;
+    choicesDiv.appendChild(btn);
+    return;
+  }
+
+  sc.choices.forEach(c=>{
+    const btn = document.createElement("button");
+    btn.textContent = c.text;
+    btn.onclick = ()=>choose(c);
+    choicesDiv.appendChild(btn);
+  });
+}
+
+function choose(choice){
+  if(choice.danger){
+    advanceEntity();
+  }
+  if(choice.wait){
+    // hesitation can save once on easy
+    if(state.difficulty==="easy" && difficultyRules.easy.hesitation){
+      difficultyRules.easy.hesitation=false;
+    } else {
+      advanceEntity();
+    }
+  }
+  state.scenario = choice.next;
+  render();
+}
+
+function advanceEntity(){
+  state.zone++;
+  if(state.zone>=ZONES.length-1){
+    resetLoop();
+  }
+}
+
+function resetLoop(){
+  state.loop++;
+  state.zone = difficultyRules[state.difficulty].startZone + Math.min(state.loop,2);
+  state.scenario = 0;
+  render();
+}
+</script>
+</body>
+</html>

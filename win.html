@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Windows</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;user-select:none}
+
+body{
+  height:100vh;
+  background:black;
+  color:white;
+  font-family:"Segoe UI",system-ui,sans-serif;
+  overflow:hidden;
+  cursor:none;
+}
+
+/* COMMON */
+.center{
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+}
+
+/* SELECTOR */
+#select{
+  gap:20px;
+  background:#0f0f0f;
+}
+
+select,button{
+  padding:12px 22px;
+  font-size:1rem;
+  border-radius:6px;
+  border:none;
+}
+
+button{
+  background:#0078d7;
+  color:white;
+  font-weight:600;
+}
+
+/* DOTS */
+.dots{display:flex;gap:10px;margin-bottom:25px}
+.dot{
+  width:10px;height:10px;border-radius:50%;
+  background:white;
+  animation:bounce 1.4s infinite ease-in-out both
+}
+.dot:nth-child(1){animation-delay:-0.32s}
+.dot:nth-child(2){animation-delay:-0.16s}
+@keyframes bounce{
+  0%,80%,100%{transform:scale(0)}
+  40%{transform:scale(1)}
+}
+
+/* UPDATE */
+#update{display:none}
+#update h1{font-size:1.6rem;margin-bottom:8px}
+#update p{opacity:.9}
+
+/* BSOD */
+#bsod{
+  display:none;
+  padding:60px;
+  align-items:flex-start;
+}
+#bsod h1{font-size:5rem;font-weight:300;margin-bottom:20px}
+#bsod p{font-size:1.2rem;line-height:1.6;max-width:900px}
+.small{font-size:.95rem;opacity:.7;margin-top:18px}
+
+/* BLACK */
+#black{display:none;background:black}
+
+/* REPAIR */
+#repair{display:none;background:black}
+#repair h1{font-size:1.4rem;margin-bottom:10px;opacity:.95}
+
+/* THEMES */
+.win10 #update, .win10 #bsod{background:#0078d7}
+.win11 #update, .win11 #bsod{
+  background:radial-gradient(circle at center,#123a5f,#050d18);
+}
+</style>
+</head>
+
+<body>
+
+<!-- SELECT -->
+<div id="select" class="center">
+  <h1>Windows Update Simulator</h1>
+  <select id="version">
+    <option value="win10">Windows 10</option>
+    <option value="win11">Windows 11</option>
+  </select>
+  <button onclick="start()">Start</button>
+</div>
+
+<!-- UPDATE -->
+<div id="update" class="center">
+  <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  <h1 id="uText">Working on updates</h1>
+  <p id="uPct">0% complete</p>
+</div>
+
+<!-- BSOD -->
+<div id="bsod" class="center">
+  <h1>:(</h1>
+  <p id="bsodText">
+    Your PC ran into a problem and needs to restart.<br>
+    We're just collecting some error info, and then we'll restart for you.
+  </p>
+  <p class="small" id="stopCode"></p>
+</div>
+
+<!-- BLACK -->
+<div id="black" class="center"></div>
+
+<!-- REPAIR -->
+<div id="repair" class="center">
+  <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  <h1 id="rText">Preparing Automatic Repair</h1>
+</div>
+
+<script>
+let pct=0,timer,loop=0;
+let version="win10";
+
+const stopCodes=[
+  "CRITICAL_PROCESS_DIED",
+  "INACCESSIBLE_BOOT_DEVICE",
+  "SYSTEM_SERVICE_EXCEPTION",
+  "KERNEL_SECURITY_CHECK_FAILURE",
+  "IRQL_NOT_LESS_OR_EQUAL"
+];
+
+function show(id){
+  ["select","update","bsod","black","repair"].forEach(x=>{
+    document.getElementById(x).style.display="none";
+  });
+  document.getElementById(id).style.display="flex";
+}
+
+function start(){
+  version=document.getElementById("version").value;
+  document.body.className=version;
+  startUpdate();
+}
+
+function startUpdate(){
+  pct=0;
+  show("update");
+  timer=setInterval(()=>{
+    if(pct>=Math.random()*55+30){
+      clearInterval(timer);
+      crash();
+      return;
+    }
+    pct+=Math.random()*2;
+    document.getElementById("uPct").innerText=Math.floor(pct)+"% complete";
+  },1500);
+}
+
+function crash(){
+  show("black");
+  setTimeout(()=>{
+    document.getElementById("stopCode").innerHTML=
+      "Stop code: "+stopCodes[Math.floor(Math.random()*stopCodes.length)]+"<br>What failed: ntoskrnl.exe";
+    show("bsod");
+  },3000);
+
+  setTimeout(()=>bootRepair(),12000);
+}
+
+function bootRepair(){
+  show("black");
+  setTimeout(()=>{
+    show("repair");
+    document.getElementById("rText").innerText="Diagnosing your PC";
+  },2500);
+
+  setTimeout(()=>{
+    document.getElementById("rText").innerText="Attempting repairs";
+  },7000);
+
+  setTimeout(()=>{
+    document.getElementById("rText").innerText="Scanning and repairing drive (C:)";
+  },12000);
+
+  setTimeout(()=>{
+    loop++;
+    startUpdate();
+  },18000);
+}
+
+/* ESC SAFETY EXIT */
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){
+    clearInterval(timer);
+    document.body.style.cursor="default";
+    location.reload();
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Maze Runner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --bg:#0b0f1a;
+  --panel:rgba(255,255,255,.08);
+  --border:rgba(255,255,255,.15);
+  --wall:#1e2a55;
+  --path:#0f1530;
+  --player:#6c8cff;
+  --start:#38d67a;
+  --end:#ff5f5f;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:system-ui,sans-serif;
+}
+
+body{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:radial-gradient(circle at top,#141b33,var(--bg));
+  color:white;
+}
+
+.game{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:1rem;
+  text-align:center;
+  backdrop-filter:blur(12px);
+}
+
+h1{
+  margin-bottom:.5rem;
+}
+
+canvas{
+  background:var(--path);
+  border-radius:12px;
+  margin:.5rem 0;
+}
+
+button{
+  padding:.4rem .9rem;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:white;
+  cursor:pointer;
+}
+
+button:hover{
+  background:rgba(255,255,255,.12);
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+  <h1>🧭 Maze Runner</h1>
+  <canvas id="maze" width="320" height="320"></canvas>
+  <br>
+  <button onclick="start()">New Maze</button>
+</div>
+
+<script>
+const canvas = document.getElementById("maze");
+const ctx = canvas.getContext("2d");
+
+const size = 16;          // cells per row
+const cell = 20;          // cell size
+let grid, player, end;
+
+function start(){
+  grid = [];
+  for(let y=0;y<size;y++){
+    grid[y] = [];
+    for(let x=0;x<size;x++){
+      grid[y][x] = {v:false,w:[1,1,1,1]};
+    }
+  }
+  carve(0,0);
+  player = {x:0,y:0};
+  end = {x:size-1,y:size-1};
+  draw();
+}
+
+function carve(x,y){
+  grid[y][x].v = true;
+  const dirs = shuffle([[0,-1,0],[1,0,1],[0,1,2],[-1,0,3]]);
+  for(const [dx,dy,d] of dirs){
+    const nx = x+dx, ny = y+dy;
+    if(nx>=0 && ny>=0 && nx<size && ny<size && !grid[ny][nx].v){
+      grid[y][x].w[d] = 0;
+      grid[ny][nx].w[(d+2)%4] = 0;
+      carve(nx,ny);
+    }
+  }
+}
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "#1e2a55";
+
+  for(let y=0;y<size;y++){
+    for(let x=0;x<size;x++){
+      const c = grid[y][x];
+      const px = x*cell, py = y*cell;
+      if(c.w[0]) line(px,py,px+cell,py);
+      if(c.w[1]) line(px+cell,py,px+cell,py+cell);
+      if(c.w[2]) line(px,py+cell,px+cell,py+cell);
+      if(c.w[3]) line(px,py,px,py+cell);
+    }
+  }
+
+  drawCell(0,0,"#38d67a");
+  drawCell(end.x,end.y,"#ff5f5f");
+  drawCell(player.x,player.y,"#6c8cff");
+}
+
+function drawCell(x,y,color){
+  ctx.fillStyle = color;
+  ctx.fillRect(x*cell+4,y*cell+4,cell-8,cell-8);
+}
+
+function line(x1,y1,x2,y2){
+  ctx.beginPath();
+  ctx.moveTo(x1,y1);
+  ctx.lineTo(x2,y2);
+  ctx.stroke();
+}
+
+function shuffle(a){
+  return a.sort(()=>Math.random()-0.5);
+}
+
+document.addEventListener("keydown",e=>{
+  const k = e.key;
+  const c = grid[player.y][player.x];
+  if((k==="ArrowUp"||k==="w") && !c.w[0]) player.y--;
+  if((k==="ArrowRight"||k==="d") && !c.w[1]) player.x++;
+  if((k==="ArrowDown"||k==="s") && !c.w[2]) player.y++;
+  if((k==="ArrowLeft"||k==="a") && !c.w[3]) player.x--;
+  draw();
+  if(player.x===end.x && player.y===end.y){
+    setTimeout(()=>alert("Maze solved! 🏁"),50);
+  }
+});
+
+start();
+</script>
+
+</body>
+</html>

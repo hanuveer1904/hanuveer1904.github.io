@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Physics Sandbox</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --bg:#0b0f1a;
+  --panel:rgba(255,255,255,.08);
+  --border:rgba(255,255,255,.15);
+  --ball:#6c8cff;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:system-ui,sans-serif;
+}
+
+body{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:radial-gradient(circle at top,#141b33,var(--bg));
+  color:white;
+}
+
+.app{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:1rem;
+  backdrop-filter:blur(12px);
+}
+
+h1{
+  text-align:center;
+  margin-bottom:.5rem;
+}
+
+canvas{
+  background:#0f1530;
+  border-radius:14px;
+  cursor:crosshair;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+  <h1>⚙️ Physics Sandbox</h1>
+  <canvas id="c" width="480" height="320"></canvas>
+</div>
+
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+const gravity = 0.4;
+const bounce = 0.8;
+const friction = 0.999;
+
+let balls = [];
+let selected = null;
+let lastMouse = null;
+
+class Ball{
+  constructor(x,y){
+    this.x=x; this.y=y;
+    this.vx=0; this.vy=0;
+    this.r=10+Math.random()*8;
+  }
+  update(){
+    this.vy += gravity;
+    this.vx *= friction;
+    this.vy *= friction;
+
+    this.x += this.vx;
+    this.y += this.vy;
+
+    if(this.x < this.r){ this.x=this.r; this.vx*=-bounce; }
+    if(this.x > canvas.width-this.r){
+      this.x=canvas.width-this.r; this.vx*=-bounce;
+    }
+    if(this.y < this.r){ this.y=this.r; this.vy*=-bounce; }
+    if(this.y > canvas.height-this.r){
+      this.y=canvas.height-this.r; this.vy*=-bounce;
+    }
+  }
+  draw(){
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+    ctx.fillStyle = "var(--ball)";
+    ctx.fill();
+  }
+}
+
+function loop(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(const b of balls){
+    if(b!==selected) b.update();
+    b.draw();
+  }
+  requestAnimationFrame(loop);
+}
+
+canvas.addEventListener("mousedown",e=>{
+  const r = canvas.getBoundingClientRect();
+  const x = e.clientX-r.left;
+  const y = e.clientY-r.top;
+
+  selected = balls.find(b=>Math.hypot(b.x-x,b.y-y)<b.r);
+  if(!selected){
+    const b = new Ball(x,y);
+    balls.push(b);
+    selected = b;
+  }
+  lastMouse = {x,y};
+});
+
+canvas.addEventListener("mousemove",e=>{
+  if(!selected) return;
+  const r = canvas.getBoundingClientRect();
+  const x = e.clientX-r.left;
+  const y = e.clientY-r.top;
+  selected.x = x;
+  selected.y = y;
+  selected.vx = x-lastMouse.x;
+  selected.vy = y-lastMouse.y;
+  lastMouse = {x,y};
+});
+
+canvas.addEventListener("mouseup",()=>{
+  selected = null;
+});
+
+loop();
+</script>
+
+</body>
+</html>

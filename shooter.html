@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Shooter Arena</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            background: #000;
+        }
+
+        /* Menu Screen */
+        #menu-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            color: #fff;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+
+        #menu-screen.hidden {
+            display: none;
+        }
+
+        .menu-title {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px #0ff;
+            color: #0ff;
+        }
+
+        .menu-section {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px;
+            border: 2px solid #0ff;
+            max-width: 600px;
+        }
+
+        .menu-section h2 {
+            color: #0ff;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .mode-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            padding: 20px;
+            background: rgba(0, 100, 150, 0.5);
+            border: 2px solid #0ff;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn:hover {
+            background: rgba(0, 150, 200, 0.7);
+            transform: scale(1.05);
+        }
+
+        .mode-btn.selected {
+            background: rgba(0, 255, 255, 0.5);
+            border-color: #0f0;
+            box-shadow: 0 0 20px #0ff;
+        }
+
+        .mode-btn .mode-desc {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        .crosshair-selection {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .crosshair-preview {
+            width: 60px;
+            height: 60px;
+            background: rgba(50, 50, 50, 0.8);
+            border: 2px solid #555;
+            border-radius: 5px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .crosshair-preview:hover {
+            border-color: #0ff;
+            transform: scale(1.1);
+        }
+
+        .crosshair-preview.selected {
+            border-color: #0f0;
+            background: rgba(0, 255, 0, 0.2);
+            box-shadow: 0 0 15px #0f0;
+        }
+
+        .start-btn {
+            padding: 15px 50px;
+            background: linear-gradient(135deg, #0f0 0%, #0a0 100%);
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 30px #0f0;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 50px #0f0;
+        }
+
+        /* Game Canvas */
+        #game-canvas {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: linear-gradient(to bottom, #2c3e50 0%, #34495e 40%, #7f8c8d 100%);
+            cursor: none;
+        }
+
+        .game-section {
+            position: absolute;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-1 {
+            top: 0;
+            left: 0;
+            width: 33.33%;
+            height: 50%;
+        }
+
+        .section-2 {
+            top: 0;
+            left: 33.33%;
+            width: 33.33%;
+            height: 50%;
+        }
+
+        .section-3 {
+            top: 0;
+            left: 66.66%;
+            width: 33.34%;
+            height: 50%;
+        }
+
+        .section-4 {
+            top: 50%;
+            left: 0;
+            width: 33.33%;
+            height: 50%;
+        }
+
+        .section-5 {
+            top: 50%;
+            left: 33.33%;
+            width: 33.33%;
+            height: 50%;
+        }
+
+        .section-6 {
+            top: 50%;
+            left: 66.66%;
+            width: 33.34%;
+            height: 50%;
+        }
+
+        /* Zoom overlay - scales content but not viewport */
+        #zoom-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            transition: transform 0.2s ease;
+            transform-origin: center center;
+        }
+
+        #zoom-layer.zoomed {
+            transform: scale(1.8);
+        }
+
+        /* Enemy */
+        .enemy {
+            position: absolute;
+            width: 60px;
+            height: 100px;
+            transition: all 0.05s linear;
+            pointer-events: none;
+        }
+
+        .enemy-head {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 25px;
+            height: 25px;
+            background: radial-gradient(circle, #FFD4A3 0%, #D4A76A 100%);
+            border-radius: 50%;
+            border: 2px solid #8B4513;
+            cursor: crosshair;
+            pointer-events: auto;
+        }
+
+        .enemy-torso {
+            position: absolute;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 35px;
+            height: 45px;
+            background: linear-gradient(to bottom, #3498db 0%, #2980b9 100%);
+            border-radius: 5px;
+            cursor: crosshair;
+            pointer-events: auto;
+        }
+
+        .enemy-legs {
+            position: absolute;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(to bottom, #34495e 0%, #2c3e50 100%);
+            border-radius: 0 0 5px 5px;
+            cursor: crosshair;
+            pointer-events: auto;
+        }
+
+        .enemy.killed {
+            animation: enemyDeath 0.5s ease forwards;
+        }
+
+        @keyframes enemyDeath {
+            0% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0.2) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Damage indicator */
+        .damage-number {
+            position: absolute;
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            pointer-events: none;
+            text-shadow: 0 0 10px #000;
+            animation: damageFloat 1s ease forwards;
+            z-index: 1000;
+        }
+
+        .damage-number.headshot {
+            color: #f00;
+            font-size: 32px;
+            text-shadow: 0 0 15px #f00;
+        }
+
+        @keyframes damageFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+        }
+
+        /* Crosshairs */
+        .crosshair {
+            position: fixed;
+            pointer-events: none;
+            z-index: 4000;
+            transition: all 0.05s ease;
+        }
+
+        /* Crosshair Type 1 - Classic */
+        .crosshair.type1 {
+            width: 40px;
+            height: 40px;
+        }
+
+        .crosshair.type1::before,
+        .crosshair.type1::after {
+            content: '';
+            position: absolute;
+            background: rgba(0, 255, 0, 0.9);
+            box-shadow: 0 0 8px #0f0;
+        }
+
+        .crosshair.type1::before {
+            width: 3px;
+            height: 15px;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+        }
+
+        .crosshair.type1::after {
+            width: 3px;
+            height: 15px;
+            left: 50%;
+            bottom: 0;
+            transform: translateX(-50%);
+        }
+
+        .crosshair.type1 .cross-left,
+        .crosshair.type1 .cross-right {
+            position: absolute;
+            width: 15px;
+            height: 3px;
+            background: rgba(0, 255, 0, 0.9);
+            top: 50%;
+            transform: translateY(-50%);
+            box-shadow: 0 0 8px #0f0;
+        }
+
+        .crosshair.type1 .cross-left {
+            left: 0;
+        }
+
+        .crosshair.type1 .cross-right {
+            right: 0;
+        }
+
+        /* Crosshair Type 2 - Dot */
+        .crosshair.type2 {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 0, 0, 0.7);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+
+        .crosshair.type2 .center-dot {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: rgba(255, 0, 0, 0.9);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px #f00;
+        }
+
+        /* Crosshair Type 3 - Square */
+        .crosshair.type3 {
+            width: 45px;
+            height: 45px;
+            border: 2px solid rgba(0, 255, 255, 0.8);
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
+        }
+
+        .crosshair.type3::before,
+        .crosshair.type3::after {
+            content: '';
+            position: absolute;
+            background: rgba(0, 255, 255, 0.8);
+        }
+
+        .crosshair.type3::before {
+            width: 20px;
+            height: 2px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .crosshair.type3::after {
+            width: 2px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Crosshair Type 4 - Sniper Scope */
+        .crosshair.type4 {
+            width: 200px;
+            height: 200px;
+            border: 4px solid rgba(255, 255, 0, 0.6);
+            border-radius: 50%;
+            background: radial-gradient(circle, transparent 48%, rgba(0, 0, 0, 0.7) 48%, rgba(0, 0, 0, 0.7) 52%, transparent 52%);
+            box-shadow: 0 0 20px rgba(255, 255, 0, 0.4);
+        }
+
+        .crosshair.type4::before,
+        .crosshair.type4::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 0, 0.8);
+        }
+
+        .crosshair.type4::before {
+            width: 2px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .crosshair.type4::after {
+            width: 100%;
+            height: 2px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .crosshair.type4 .mil-dot {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 0, 0.8);
+            border-radius: 50%;
+        }
+
+        /* Crosshair Type 5 - Tactical */
+        .crosshair.type5 {
+            width: 55px;
+            height: 55px;
+        }
+
+        .crosshair.type5 .corner {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border: 3px solid rgba(255, 100, 0, 0.8);
+            box-shadow: 0 0 8px rgba(255, 100, 0, 0.5);
+        }
+
+        .crosshair.type5 .corner:nth-child(1) {
+            top: 0;
+            left: 0;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .crosshair.type5 .corner:nth-child(2) {
+            top: 0;
+            right: 0;
+            border-left: none;
+            border-bottom: none;
+        }
+
+        .crosshair.type5 .corner:nth-child(3) {
+            bottom: 0;
+            left: 0;
+            border-right: none;
+            border-top: none;
+        }
+
+        .crosshair.type5 .corner:nth-child(4) {
+            bottom: 0;
+            right: 0;
+            border-left: none;
+            border-top: none;
+        }
+
+        .crosshair.type5 .center-dot {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 100, 0, 0.9);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Crosshair Type 6 - Minimal */
+        .crosshair.type6 {
+            width: 30px;
+            height: 30px;
+        }
+
+        .crosshair.type6 .line {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+        }
+
+        .crosshair.type6 .line:nth-child(1) {
+            width: 2px;
+            height: 10px;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .crosshair.type6 .line:nth-child(2) {
+            width: 2px;
+            height: 10px;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .crosshair.type6 .line:nth-child(3) {
+            width: 10px;
+            height: 2px;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .crosshair.type6 .line:nth-child(4) {
+            width: 10px;
+            height: 2px;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* HUD */
+        #hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            z-index: 3000;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border: 2px solid #0f0;
+            border-radius: 5px;
+        }
+
+        #hud div {
+            margin: 8px 0;
+        }
+
+        #timer-display {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 48px;
+            color: #ff0;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            text-shadow: 0 0 20px #ff0;
+            z-index: 3000;
+        }
+
+        #weapon-info {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            z-index: 3000;
+            text-align: right;
+        }
+
+        #weapon-info .weapon-name {
+            font-size: 36px;
+            font-weight: bold;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+        }
+
+        #weapon-info .ammo {
+            font-size: 28px;
+            color: #ff0;
+            text-shadow: 0 0 10px #ff0;
+            margin-top: 5px;
+        }
+
+        #weapon-select {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 3000;
+        }
+
+        .weapon-btn {
+            padding: 15px 25px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            border: 2px solid #555;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .weapon-btn:hover {
+            border-color: #0f0;
+            transform: scale(1.05);
+        }
+
+        .weapon-btn.active {
+            background: rgba(0, 255, 0, 0.3);
+            border-color: #0f0;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+
+        /* Hitmarker */
+        .hitmarker {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            pointer-events: none;
+            z-index: 3500;
+            opacity: 0;
+        }
+
+        .hitmarker::before,
+        .hitmarker::after {
+            content: '';
+            position: absolute;
+            background: #fff;
+            box-shadow: 0 0 10px #fff;
+        }
+
+        .hitmarker::before {
+            width: 12px;
+            height: 3px;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%) rotate(-45deg);
+        }
+
+        .hitmarker::after {
+            width: 12px;
+            height: 3px;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%) rotate(45deg);
+        }
+
+        .hitmarker.show {
+            animation: hitmarkerShow 0.15s ease;
+        }
+
+        @keyframes hitmarkerShow {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(1);
+            }
+        }
+
+        /* Muzzle flash */
+        .muzzle-flash {
+            position: fixed;
+            bottom: 10%;
+            left: 10%;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, #fff 0%, #ff0 20%, #f80 40%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 2500;
+        }
+
+        .muzzle-flash.active {
+            animation: flash 0.08s ease;
+        }
+
+        @keyframes flash {
+
+            0%,
+            100% {
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* Game Over screen */
+        #game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 6000;
+            color: #fff;
+        }
+
+        #game-over.show {
+            display: flex;
+        }
+
+        .game-over-title {
+            font-size: 72px;
+            color: #0ff;
+            margin-bottom: 40px;
+            text-shadow: 0 0 40px #0ff;
+        }
+
+        .stats-display {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 40px;
+            border: 3px solid #0ff;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .stats-display div {
+            font-size: 24px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .restart-btn {
+            padding: 20px 60px;
+            background: linear-gradient(135deg, #0f0 0%, #0a0 100%);
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 30px #0f0;
+        }
+
+        .restart-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .reload-indicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #f00;
+            font-size: 42px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 20px #f00;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 3500;
+        }
+
+        .reload-indicator.show {
+            animation: reloadPulse 1.5s ease;
+        }
+
+        @keyframes reloadPulse {
+
+            0%,
+            100% {
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Menu Screen -->
+    <div id="menu-screen">
+        <div class="menu-title">🎯 ELITE SHOOTER ARENA</div>
+
+        <div class="menu-section">
+            <h2>SELECT GAME MODE</h2>
+            <div class="mode-buttons">
+                <div class="mode-btn selected" data-mode="practice">
+                    <div><strong>PRACTICE</strong></div>
+                    <div class="mode-desc">No time limit, unlimited targets</div>
+                </div>
+                <div class="mode-btn" data-mode="timed">
+                    <div><strong>TIMED</strong></div>
+                    <div class="mode-desc">60 seconds to get max kills</div>
+                </div>
+                <div class="mode-btn" data-mode="target">
+                    <div><strong>TARGET HUNT</strong></div>
+                    <div class="mode-desc">Reach 30 kills to win</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <h2>SELECT CROSSHAIR</h2>
+            <div class="crosshair-selection">
+                <div class="crosshair-preview selected" data-crosshair="type1">
+                    <div style="color: #0f0; font-size: 24px;">✚</div>
+                </div>
+                <div class="crosshair-preview" data-crosshair="type2">
+                    <div style="color: #f00; font-size: 24px;">⊙</div>
+                </div>
+                <div class="crosshair-preview" data-crosshair="type3">
+                    <div style="color: #0ff; font-size: 24px;">▢</div>
+                </div>
+                <div class="crosshair-preview" data-crosshair="type4">
+                    <div style="color: #ff0; font-size: 24px;">⊕</div>
+                </div>
+                <div class="crosshair-preview" data-crosshair="type5">
+                    <div style="color: #f80; font-size: 24px;">▭</div>
+                </div>
+                <div class="crosshair-preview" data-crosshair="type6">
+                    <div style="color: #fff; font-size: 24px;">+</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="start-btn" onclick="startGame()">START GAME</button>
+    </div>
+
+    <!-- Game Canvas -->
+    <div id="game-canvas" style="display: none;">
+        <div class="game-section section-1"></div>
+        <div class="game-section section-2"></div>
+        <div class="game-section section-3"></div>
+        <div class="game-section section-4"></div>
+        <div class="game-section section-5"></div>
+        <div class="game-section section-6"></div>
+
+        <div id="zoom-layer"></div>
+    </div>
+
+    <div class="crosshair type1" id="crosshair">
+        <div class="cross-left"></div>
+        <div class="cross-right"></div>
+        <div class="center-dot"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="corner"></div>
+        <div class="corner"></div>
+        <div class="corner"></div>
+        <div class="corner"></div>
+        <div class="mil-dot"></div>
+        <div class="mil-dot"></div>
+        <div class="mil-dot"></div>
+        <div class="mil-dot"></div>
+    </div>
+
+    <div class="hitmarker" id="hitmarker"></div>
+    <div class="muzzle-flash" id="muzzle-flash"></div>
+
+    <div id="hud" style="display: none;">
+        <div>KILLS: <span id="kills">0</span></div>
+        <div>ACCURACY: <span id="accuracy">0%</span></div>
+        <div>HEADSHOTS: <span id="headshots">0</span></div>
+    </div>
+
+    <div id="timer-display" style="display: none;"></div>
+
+    <div id="weapon-info" style="display: none;">
+        <div class="weapon-name" id="weapon-name">RIFLE</div>
+        <div class="ammo" id="ammo-display">30 / 30</div>
+    </div>
+
+    <div id="weapon-select" style="display: none;">
+        <button class="weapon-btn active" data-weapon="rifle">1. RIFLE</button>
+        <button class="weapon-btn" data-weapon="sniper">2. SNIPER</button>
+        <button class="weapon-btn" data-weapon="shotgun">3. SHOTGUN</button>
+        <button class="weapon-btn" data-weapon="machinegun">4. MACHINE GUN</button>
+    </div>
+
+    <div class="reload-indicator" id="reload-indicator">RELOADING...</div>
+
+    <!-- Game Over Screen -->
+    <div id="game-over">
+        <div class="game-over-title">MISSION COMPLETE!</div>
+        <div class="stats-display">
+            <div>TOTAL KILLS: <span id="final-kills">0</span></div>
+            <div>ACCURACY: <span id="final-accuracy">0%</span></div>
+            <div>HEADSHOTS: <span id="final-headshots">0</span></div>
+            <div>TIME: <span id="final-time">0s</span></div>
+        </div>
+        <button class="restart-btn" onclick="location.reload()">PLAY AGAIN</button>
+    </div>
+
+    <script>
+        // Game state
+        let gameMode = 'practice';
+        let selectedCrosshair = 'type1';
+        let currentWeapon = 'rifle';
+        let isZoomed = false;
+        let kills = 0;
+        let shots = 0;
+        let hits = 0;
+        let headshots = 0;
+        let isReloading = false;
+        let canShoot = true;
+        let enemies = [];
+        let gameStartTime;
+        let gameTimer;
+        let mouseX = 0;
+        let mouseY = 0;
+        let isShooting = false;
+
+        // Weapon configurations
+        const weapons = {
+            rifle: {
+                name: 'RIFLE',
+                ammo: 30,
+                maxAmmo: 30,
+                damage: { head: 100, torso: 75, legs: 20 },
+                fireRate: 150,
+                reloadTime: 2000,
+                accuracy: 0.95,
+                range: 1000,
+                auto: false
+            },
+            sniper: {
+                name: 'SNIPER',
+                ammo: 5,
+                maxAmmo: 5,
+                damage: { head: 100, torso: 100, legs: 50 },
+                fireRate: 1200,
+                reloadTime: 3000,
+                accuracy: 1.0,
+                range: 2000,
+                auto: false,
+                requiresZoom: true
+            },
+            shotgun: {
+                name: 'SHOTGUN',
+                ammo: 8,
+                maxAmmo: 8,
+                damage: { head: 100, torso: 85, legs: 30 },
+                fireRate: 800,
+                reloadTime: 2500,
+                accuracy: 0.7,
+                range: 300,
+                auto: false
+            },
+            machinegun: {
+                name: 'MACHINE GUN',
+                ammo: 100,
+                maxAmmo: 100,
+                damage: { head: 100, torso: 60, legs: 15 },
+                fireRate: 100,
+                reloadTime: 3500,
+                accuracy: 0.85,
+                range: 800,
+                auto: true
+            }
+        };
+
+        // Menu selection
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                gameMode = btn.dataset.mode;
+            });
+        });
+
+        document.querySelectorAll('.crosshair-preview').forEach(preview => {
+            preview.addEventListener('click', () => {
+                document.querySelectorAll('.crosshair-preview').forEach(p => p.classList.remove('selected'));
+                preview.classList.add('selected');
+                selectedCrosshair = preview.dataset.crosshair;
+            });
+        });
+
+        function startGame() {
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('game-canvas').style.display = 'block';
+            document.getElementById('hud').style.display = 'block';
+            document.getElementById('weapon-info').style.display = 'block';
+            document.getElementById('weapon-select').style.display = 'flex';
+
+            // Apply selected crosshair
+            document.getElementById('crosshair').className = 'crosshair ' + selectedCrosshair;
+
+            // Initialize game based on mode
+            gameStartTime = Date.now();
+
+            if (gameMode === 'timed') {
+                document.getElementById('timer-display').style.display = 'block';
+                startTimer(60);
+            } else if (gameMode === 'target') {
+                // Target mode - 30 kills
+            }
+
+            // Start spawning enemies
+            spawnEnemies();
+            setInterval(spawnEnemies, 2000);
+        }
+
+        function startTimer(seconds) {
+            let timeLeft = seconds;
+            const timerDisplay = document.getElementById('timer-display');
+
+            gameTimer = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft + 's';
+
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            clearInterval(gameTimer);
+            const gameTime = Math.floor((Date.now() - gameStartTime) / 1000);
+
+            document.getElementById('final-kills').textContent = kills;
+            document.getElementById('final-accuracy').textContent =
+                shots > 0 ? Math.round((hits / shots) * 100) + '%' : '0%';
+            document.getElementById('final-headshots').textContent = headshots;
+            document.getElementById('final-time').textContent = gameTime + 's';
+
+            document.getElementById('game-over').classList.add('show');
+        }
+
+        // Mouse tracking
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            const crosshair = document.getElementById('crosshair');
+            crosshair.style.left = mouseX - crosshair.offsetWidth / 2 + 'px';
+            crosshair.style.top = mouseY - crosshair.offsetHeight / 2 + 'px';
+        });
+
+        document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        // Left click - shoot
+        document.addEventListener('mousedown', (e) => {
+            if (e.button === 0) {
+                isShooting = true;
+                shoot();
+            } else if (e.button === 2) {
+                // Right click - zoom
+                isZoomed = true;
+                document.getElementById('zoom-layer').classList.add('zoomed');
+            }
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if (e.button === 0) {
+                isShooting = false;
+            } else if (e.button === 2) {
+                isZoomed = false;
+                document.getElementById('zoom-layer').classList.remove('zoomed');
+            }
+        });
+
+        // Weapon selection
+        document.querySelectorAll('.weapon-btn').forEach(btn => {
+            btn.addEventListener('click', () => selectWeapon(btn.dataset.weapon));
+        });
+
+        document.addEventListener('keydown', (e) => {
+            const weaponKeys = { '1': 'rifle', '2': 'sniper', '3': 'shotgun', '4': 'machinegun' };
+            if (weaponKeys[e.key]) {
+                selectWeapon(weaponKeys[e.key]);
+            } else if (e.key === 'r' || e.key === 'R') {
+                reload();
+            }
+        });
+
+        function selectWeapon(weaponName) {
+            currentWeapon = weaponName;
+            const weapon = weapons[weaponName];
+
+            document.getElementById('weapon-name').textContent = weapon.name;
+            updateAmmoDisplay();
+
+            document.querySelectorAll('.weapon-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.weapon === weaponName) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        function updateAmmoDisplay() {
+            const weapon = weapons[currentWeapon];
+            document.getElementById('ammo-display').textContent =
+                `${weapon.ammo} / ${weapon.maxAmmo}`;
+        }
+
+        function shoot() {
+            const weapon = weapons[currentWeapon];
+
+            if (isReloading || !canShoot || weapon.ammo <= 0) {
+                if (weapon.ammo <= 0) reload();
+                return;
+            }
+
+            if (weapon.requiresZoom && !isZoomed) return;
+
+            weapon.ammo--;
+            shots++;
+            updateAmmoDisplay();
+
+            // Muzzle flash
+            document.getElementById('muzzle-flash').classList.add('active');
+            setTimeout(() => document.getElementById('muzzle-flash').classList.remove('active'), 80);
+
+            // Check hit
+            checkHit(mouseX, mouseY, weapon);
+
+            // Fire rate
+            canShoot = false;
+            setTimeout(() => {
+                canShoot = true;
+                // Auto fire for machine gun
+                if (weapon.auto && isShooting) {
+                    shoot();
+                }
+            }, weapon.fireRate);
+
+            if (weapon.ammo === 0) {
+                setTimeout(() => reload(), 300);
+            }
+        }
+
+        function reload() {
+            const weapon = weapons[currentWeapon];
+            if (isReloading || weapon.ammo === weapon.maxAmmo) return;
+
+            isReloading = true;
+            document.getElementById('reload-indicator').classList.add('show');
+
+            setTimeout(() => {
+                weapon.ammo = weapon.maxAmmo;
+                updateAmmoDisplay();
+                isReloading = false;
+                document.getElementById('reload-indicator').classList.remove('show');
+            }, weapon.reloadTime);
+        }
+
+        function checkHit(x, y, weapon) {
+            const elements = document.elementsFromPoint(x, y);
+
+            for (let element of elements) {
+                if (element.classList.contains('enemy-head')) {
+                    hitEnemy(element.parentElement, 'head', weapon);
+                    return;
+                } else if (element.classList.contains('enemy-torso')) {
+                    hitEnemy(element.parentElement, 'torso', weapon);
+                    return;
+                } else if (element.classList.contains('enemy-legs')) {
+                    hitEnemy(element.parentElement, 'legs', weapon);
+                    return;
+                }
+            }
+        }
+
+        function hitEnemy(enemy, bodyPart, weapon) {
+            hits++;
+
+            const damage = weapon.damage[bodyPart];
+            const isHeadshot = bodyPart === 'head';
+
+            if (isHeadshot) headshots++;
+
+            // Show hitmarker
+            const hitmarker = document.getElementById('hitmarker');
+            hitmarker.style.left = mouseX - 15 + 'px';
+            hitmarker.style.top = mouseY - 15 + 'px';
+            hitmarker.classList.add('show');
+            setTimeout(() => hitmarker.classList.remove('show'), 150);
+
+            // Show damage number
+            const damageNum = document.createElement('div');
+            damageNum.className = 'damage-number' + (isHeadshot ? ' headshot' : '');
+            damageNum.textContent = damage + (isHeadshot ? ' HEADSHOT!' : '');
+            damageNum.style.left = mouseX + 'px';
+            damageNum.style.top = mouseY + 'px';
+            document.getElementById('game-canvas').appendChild(damageNum);
+            setTimeout(() => damageNum.remove(), 1000);
+
+            // Kill enemy
+            enemy.classList.add('killed');
+            kills++;
+            document.getElementById('kills').textContent = kills;
+            document.getElementById('headshots').textContent = headshots;
+
+            const accuracy = shots > 0 ? Math.round((hits / shots) * 100) : 0;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+
+            setTimeout(() => {
+                enemy.remove();
+                enemies = enemies.filter(e => e !== enemy);
+            }, 500);
+
+            // Check win condition
+            if (gameMode === 'target' && kills >= 30) {
+                endGame();
+            }
+        }
+
+        function spawnEnemies() {
+            if (enemies.length >= 6) return;
+
+            const enemy = document.createElement('div');
+            enemy.className = 'enemy';
+
+            const head = document.createElement('div');
+            head.className = 'enemy-head';
+
+            const torso = document.createElement('div');
+            torso.className = 'enemy-torso';
+
+            const legs = document.createElement('div');
+            legs.className = 'enemy-legs';
+
+            enemy.appendChild(head);
+            enemy.appendChild(torso);
+            enemy.appendChild(legs);
+
+            // Random section (1-6)
+            const section = Math.floor(Math.random() * 6) + 1;
+            const sectionEl = document.querySelector('.section-' + section);
+            const rect = sectionEl.getBoundingClientRect();
+
+            const x = rect.left + Math.random() * (rect.width - 60);
+            const y = rect.top + Math.random() * (rect.height - 100);
+            const scale = 0.6 + Math.random() * 0.6;
+
+            enemy.style.left = x + 'px';
+            enemy.style.top = y + 'px';
+            enemy.style.transform = `scale(${scale})`;
+
+            document.getElementById('zoom-layer').appendChild(enemy);
+            enemies.push(enemy);
+
+            moveEnemy(enemy);
+        }
+
+        function moveEnemy(enemy) {
+            const speed = 0.3 + Math.random() * 0.7;
+            const directionX = Math.random() > 0.5 ? 1 : -1;
+            const directionY = (Math.random() - 0.5) * 0.5;
+
+            const moveInterval = setInterval(() => {
+                if (!document.body.contains(enemy)) {
+                    clearInterval(moveInterval);
+                    return;
+                }
+
+                const currentLeft = parseFloat(enemy.style.left);
+                const currentTop = parseFloat(enemy.style.top);
+
+                enemy.style.left = (currentLeft + speed * directionX) + 'px';
+                enemy.style.top = (currentTop + speed * directionY) + 'px';
+
+                // Remove if out of bounds
+                if (currentLeft < -100 || currentLeft > window.innerWidth + 100) {
+                    clearInterval(moveInterval);
+                    enemy.remove();
+                    enemies = enemies.filter(e => e !== enemy);
+                }
+            }, 50);
+        }
+
+        // Initialize
+        selectWeapon('rifle');
+    </script>
+</body>
+
+</html>

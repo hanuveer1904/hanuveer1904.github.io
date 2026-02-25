@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSQB — Question Bank</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --glass-bg: rgba(255,255,255,0.15);
+            --glass-bg-dark: rgba(15,23,42,0.6);
+            --glass-border: rgba(255,255,255,0.25);
+            --glass-border-dark: rgba(255,255,255,0.08);
+            --blur: blur(18px);
+            --bg-gradient: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #0f172a 100%);
+            --text-dark: #1e293b;
+            --text-light: #f1f5f9;
+            --text-gray: #64748b;
+            --border-color: rgba(255,255,255,0.2);
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 24px rgba(0,0,0,0.15);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,0.25);
+            --error-color: #ef4444;
+            --success-color: #10b981;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+        body.dark-mode { --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0a0a0f 100%); }
+
+        /* Animated background blobs */
+        .bg-blob {
+            position: fixed; border-radius: 50%; filter: blur(80px);
+            opacity: 0.3; pointer-events: none; z-index: 0; animation: blobFloat 12s ease-in-out infinite;
+        }
+        .bg-blob-1 { width: 500px; height: 500px; background: #3b82f6; top: -100px; left: -100px; animation-delay: 0s; }
+        .bg-blob-2 { width: 400px; height: 400px; background: #8b5cf6; bottom: -50px; right: -100px; animation-delay: 4s; }
+        .bg-blob-3 { width: 300px; height: 300px; background: #06b6d4; top: 40%; left: 40%; animation-delay: 8s; }
+        @keyframes blobFloat {
+            0%, 100% { transform: translate(0,0) scale(1); }
+            33% { transform: translate(30px,-20px) scale(1.05); }
+            66% { transform: translate(-20px,30px) scale(0.95); }
+        }
+
+        /* Glass utility */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border: 1px solid var(--glass-border);
+        }
+
+        /* ===== WELCOME MODAL ===== */
+        #welcomeModal {
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            animation: fadeIn 0.5s ease;
+        }
+        #welcomeModal.hide {
+            animation: fadeOut 0.4s ease forwards;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+        .welcome-modal-box {
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            max-width: 500px; width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.1s both;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8) translateY(40px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .welcome-modal-box .logo-wrap {
+            width: 80px; height: 80px; border-radius: 1.25rem;
+            background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1.25rem; overflow: hidden;
+        }
+        .welcome-modal-box .logo-wrap img { width: 60px; height: 60px; object-fit: contain; }
+        .welcome-modal-box h1 {
+            font-size: 2rem; font-weight: 800; color: #fff;
+            margin-bottom: 0.5rem; letter-spacing: -0.03em;
+        }
+        .welcome-modal-box .tagline {
+            color: rgba(255,255,255,0.7); font-size: 0.95rem; margin-bottom: 1.5rem;
+        }
+        .terms-box {
+            background: rgba(0,0,0,0.25); border-radius: 0.75rem;
+            padding: 1rem; margin-bottom: 1.25rem;
+            text-align: left; font-size: 0.8rem;
+            color: rgba(255,255,255,0.65); max-height: 120px; overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.1); line-height: 1.6;
+        }
+        .terms-check {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.85rem; color: rgba(255,255,255,0.8);
+            margin-bottom: 1.25rem; cursor: pointer; justify-content: center;
+        }
+        .terms-check input { accent-color: #60a5fa; width: 16px; height: 16px; cursor: pointer; }
+        .welcome-enter-btn {
+            width: 100%; padding: 0.875rem; border-radius: 1rem;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: white; border: none; cursor: pointer;
+            font-weight: 700; font-size: 1rem;
+            transition: all 0.2s ease; opacity: 0.5; pointer-events: none;
+            box-shadow: 0 4px 20px rgba(37,99,235,0.4);
+        }
+        .welcome-enter-btn.active { opacity: 1; pointer-events: all; }
+        .welcome-enter-btn.active:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(37,99,235,0.5); }
+
+        /* ===== COOKIE BANNER ===== */
+        #cookieBanner {
+            position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%);
+            z-index: 8000; width: 90%; max-width: 680px;
+            background: rgba(15,23,42,0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 1rem; padding: 1rem 1.25rem;
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 1rem; box-shadow: var(--shadow-lg);
+            animation: slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(40px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        #cookieBanner.hide { animation: slideDown 0.3s ease forwards; }
+        @keyframes slideDown {
+            from { opacity: 1; transform: translateX(-50%) translateY(0); }
+            to { opacity: 0; transform: translateX(-50%) translateY(40px); }
+        }
+        .cookie-text { font-size: 0.8rem; color: rgba(255,255,255,0.75); flex: 1; line-height: 1.5; }
+        .cookie-text span { color: #60a5fa; }
+        .cookie-btns { display: flex; gap: 0.5rem; flex-shrink: 0; }
+        .cookie-btn {
+            padding: 0.5rem 1rem; border-radius: 0.5rem;
+            font-size: 0.8rem; font-weight: 600; cursor: pointer; border: none;
+            transition: all 0.2s ease;
+        }
+        .cookie-accept { background: #2563eb; color: white; }
+        .cookie-accept:hover { background: #1d4ed8; }
+        .cookie-decline { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.15); }
+        .cookie-decline:hover { background: rgba(255,255,255,0.18); }
+
+        /* ===== HEADER ===== */
+        .page-header {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.12);
+            padding: 0.75rem 1.5rem;
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.15);
+        }
+        .header-left { display: flex; align-items: center; gap: 0.75rem; }
+        .header-logo {
+            width: 36px; height: 36px; border-radius: 0.5rem;
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
+        .header-logo img { width: 28px; height: 28px; object-fit: contain; }
+        .header-title {
+            font-size: 1.4rem; font-weight: 800; letter-spacing: -0.025em;
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 40%, #f472b6 80%, #fb923c 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header-controls { display: flex; gap: 0.5rem; align-items: center; }
+        .icon-button {
+            width: 2.25rem; height: 2.25rem; border-radius: 0.6rem;
+            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.75); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease; font-size: 0.95rem;
+        }
+        .icon-button:hover {
+            background: rgba(255,255,255,0.18); color: #fff;
+            transform: translateY(-1px); box-shadow: var(--shadow-md);
+        }
+        .menu-container { position: relative; }
+        .dropdown-menu {
+            display: none; position: absolute; right: 0; top: calc(100% + 0.5rem);
+            background: rgba(15,23,42,0.9); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.12); border-radius: 0.75rem;
+            box-shadow: var(--shadow-lg); min-width: 180px; overflow: hidden;
+            opacity: 0; transform: translateY(-10px); transition: all 0.2s ease;
+        }
+        .dropdown-menu.show { display: block; opacity: 1; transform: translateY(0); }
+        .dropdown-item {
+            width: 100%; padding: 0.7rem 1rem; border: none;
+            background: transparent; color: rgba(255,255,255,0.8);
+            text-align: left; cursor: pointer; transition: background 0.15s ease;
+            font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem;
+        }
+        .dropdown-item:hover { background: rgba(255,255,255,0.1); }
+
+        /* ===== CHAT AREA ===== */
+        .chat-container {
+            flex: 1; margin-top: 4.5rem; margin-bottom: 5.5rem;
+            padding: 2rem 1rem; max-width: 800px; width: 100%;
+            margin-left: auto; margin-right: auto; overflow-y: auto; position: relative; z-index: 1;
+        }
+        .welcome-message {
+            text-align: center; padding: 3rem 1rem; color: rgba(255,255,255,0.7);
+        }
+        .welcome-message h2 {
+            font-size: 2rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem;
+        }
+        .welcome-message p { font-size: 1rem; margin-bottom: 2rem; color: rgba(255,255,255,0.6); }
+        .suggestion-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-top: 1.5rem; }
+        .chip {
+            padding: 0.5rem 1rem; border-radius: 2rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(10px);
+            color: rgba(255,255,255,0.8); font-size: 0.875rem; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .chip:hover {
+            background: var(--primary); color: white;
+            border-color: var(--primary); transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(37,99,235,0.4);
+        }
+        #chat-box { display: flex; flex-direction: column; gap: 1rem; }
+        .message {
+            padding: 1rem 1.25rem; border-radius: 1.25rem;
+            max-width: 80%; word-wrap: break-word; line-height: 1.6;
+            font-size: 0.9375rem; animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .user-message {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: white; margin-left: auto;
+            border-bottom-right-radius: 0.25rem;
+            box-shadow: 0 4px 20px rgba(37,99,235,0.3);
+        }
+        .bot-message {
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.18);
+            color: #fff; margin-right: auto;
+            border-bottom-left-radius: 0.25rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .loading-message { display: flex; align-items: center; gap: 0.5rem; }
+        .typing-dots { display: flex; gap: 0.25rem; }
+        .typing-dot {
+            width: 0.5rem; height: 0.5rem; border-radius: 50%;
+            background: rgba(255,255,255,0.6); animation: typing 1.4s infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+            30% { opacity: 1; transform: translateY(-0.25rem); }
+        }
+
+        /* ===== INPUT AREA ===== */
+        .input-area {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(15,23,42,0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding: 0.875rem 1rem;
+            box-shadow: 0 -4px 24px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+        .input-wrapper { max-width: 800px; margin: 0 auto; display: flex; gap: 0.75rem; align-items: center; }
+        .mic-button, .calc-button {
+            width: 2.75rem; height: 2.75rem; min-width: 2.75rem;
+            border-radius: 50%; border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.75); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease; font-size: 1.1rem;
+        }
+        .mic-button:hover:not(:disabled), .calc-button:hover:not(:disabled) {
+            background: var(--primary); color: white; transform: scale(1.05); box-shadow: var(--shadow-md);
+        }
+        .mic-button:disabled, .calc-button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .input-field-wrapper { flex: 1; }
+        #questionInput {
+            width: 100%; padding: 0.875rem 1.25rem;
+            border: 1px solid rgba(255,255,255,0.18); border-radius: 1.5rem;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            color: #fff; font-size: 0.9375rem; transition: all 0.2s ease; outline: none;
+        }
+        #questionInput::placeholder { color: rgba(255,255,255,0.45); }
+        #questionInput:focus {
+            border-color: rgba(96,165,250,0.6);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.2);
+            background: rgba(255,255,255,0.15);
+        }
+        #questionInput:disabled { opacity: 0.5; cursor: not-allowed; }
+        #sendButton {
+            padding: 0.875rem 1.5rem; border-radius: 1.5rem;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: white; border: none; cursor: pointer; font-weight: 600;
+            font-size: 0.9375rem; transition: all 0.2s ease; white-space: nowrap;
+        }
+        #sendButton:hover:not(:disabled) {
+            transform: translateY(-1px); box-shadow: 0 6px 24px rgba(37,99,235,0.4);
+        }
+        #sendButton:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* ===== MODALS ===== */
+        .modal {
+            display: none; position: fixed; z-index: 2000;
+            inset: 0; background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(6px); animation: fadeIn 0.2s ease;
+        }
+        .modal-content {
+            background: rgba(15,23,42,0.88);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255,255,255,0.12);
+            margin: 3rem auto; padding: 2rem; border-radius: 1rem;
+            max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;
+            box-shadow: var(--shadow-lg); animation: slideDown 0.3s ease; color: #fff;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-header h2 { font-size: 1.4rem; font-weight: 700; color: #fff; }
+        .close-button {
+            width: 2rem; height: 2rem; border-radius: 0.5rem; border: none;
+            background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7);
+            font-size: 1.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .close-button:hover { background: rgba(255,255,255,0.2); color: #fff; }
+        .modal-content p { color: rgba(255,255,255,0.65); margin-bottom: 1.5rem; font-size: 0.9375rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: rgba(255,255,255,0.85); font-size: 0.875rem; }
+        .form-input, .form-textarea {
+            width: 100%; padding: 0.875rem 1rem;
+            border: 1px solid rgba(255,255,255,0.15); border-radius: 0.5rem;
+            background: rgba(255,255,255,0.08); color: #fff;
+            font-size: 0.9375rem; transition: all 0.2s ease; outline: none; font-family: inherit;
+        }
+        .form-textarea { resize: vertical; min-height: 100px; }
+        .form-input::placeholder, .form-textarea::placeholder { color: rgba(255,255,255,0.35); }
+        .form-input:focus, .form-textarea:focus {
+            border-color: rgba(96,165,250,0.5); box-shadow: 0 0 0 3px rgba(37,99,235,0.2);
+        }
+        .btn-primary {
+            width: 100%; padding: 0.875rem; border-radius: 0.5rem;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: white; border: none; cursor: pointer; font-weight: 600;
+            font-size: 0.9375rem; transition: all 0.2s ease; margin-top: 1rem;
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        .custom-qa-list { margin-top: 1rem; }
+        .qa-item {
+            padding: 1rem; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 0.5rem; margin-bottom: 0.75rem;
+            background: rgba(255,255,255,0.05);
+        }
+        .qa-item-question { font-weight: 600; color: #fff; margin-bottom: 0.4rem; font-size: 0.9375rem; }
+        .qa-item-answer { color: rgba(255,255,255,0.6); font-size: 0.875rem; margin-bottom: 0.5rem; }
+        .btn-small { padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; border: none; cursor: pointer; transition: all 0.2s ease; }
+        .btn-delete { background: var(--error-color); color: white; }
+        .btn-delete:hover { background: #dc2626; }
+
+        /* Calculator */
+        .calculator { border-radius: 1rem; padding: 1rem; }
+        .calc-display {
+            width: 100%; padding: 1rem; margin-bottom: 1rem;
+            border: 1px solid rgba(255,255,255,0.15); border-radius: 0.5rem;
+            background: rgba(0,0,0,0.3); color: #fff;
+            font-size: 1.5rem; text-align: right; font-family: 'Courier New', monospace; min-height: 3rem;
+        }
+        .calc-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+        .calc-btn {
+            padding: 1rem; border: 1px solid rgba(255,255,255,0.12); border-radius: 0.5rem;
+            background: rgba(255,255,255,0.08); color: #fff;
+            font-size: 1.1rem; cursor: pointer; transition: all 0.2s ease; font-weight: 600;
+        }
+        .calc-btn:hover { background: rgba(255,255,255,0.18); transform: translateY(-1px); }
+        .calc-btn.operator { background: rgba(37,99,235,0.5); color: white; border-color: rgba(37,99,235,0.4); }
+        .calc-btn.operator:hover { background: rgba(37,99,235,0.7); }
+        .calc-btn.equals { background: linear-gradient(135deg, #10b981,#059669); color: white; grid-column: span 2; border-color: transparent; }
+        .calc-btn.equals:hover { filter: brightness(1.1); }
+        .calc-btn.clear { background: rgba(239,68,68,0.5); color: white; border-color: rgba(239,68,68,0.3); }
+        .calc-btn.clear:hover { background: rgba(239,68,68,0.7); }
+
+        /* ===== VOICE SETTINGS MODAL ===== */
+        .voice-setting { margin-bottom: 1.25rem; }
+        .voice-setting label {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 0.5rem; font-weight: 600; color: rgba(255,255,255,0.9); font-size: 0.875rem;
+        }
+        .voice-setting label span {
+            font-size: 0.8rem; font-weight: 700; color: #60a5fa;
+            background: rgba(96,165,250,0.15); padding: 0.15rem 0.5rem;
+            border-radius: 0.4rem; min-width: 2.5rem; text-align: center;
+        }
+        .voice-slider {
+            -webkit-appearance: none; appearance: none;
+            width: 100%; height: 6px; border-radius: 3px; outline: none; cursor: pointer;
+            background: linear-gradient(to right, #2563eb 0%, #7c3aed 100%);
+            border: none;
+        }
+        .voice-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 18px; height: 18px; border-radius: 50%;
+            background: white; cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            border: 2px solid #7c3aed;
+        }
+        .voice-slider::-moz-range-thumb {
+            width: 18px; height: 18px; border-radius: 50%;
+            background: white; cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            border: 2px solid #7c3aed;
+        }
+        .voice-preview-btn {
+            width: 100%; padding: 0.75rem; border-radius: 0.75rem; border: none; cursor: pointer;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: white; font-weight: 600; font-size: 0.9rem; margin-top: 0.5rem;
+            transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .voice-preview-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.4); }
+        .voice-mute-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.75rem; border-radius: 0.75rem; background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1); margin-bottom: 1.25rem;
+        }
+        .voice-mute-row span { font-size: 0.875rem; color: rgba(255,255,255,0.8); font-weight: 600; }
+        .toggle-switch {
+            position: relative; width: 44px; height: 24px; cursor: pointer;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-track {
+            position: absolute; inset: 0; border-radius: 12px;
+            background: rgba(255,255,255,0.2); transition: 0.3s;
+        }
+        .toggle-switch input:checked + .toggle-track { background: #2563eb; }
+        .toggle-track::after {
+            content: ''; position: absolute; left: 3px; top: 3px;
+            width: 18px; height: 18px; border-radius: 50%;
+            background: white; transition: 0.3s; box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+        .toggle-switch input:checked + .toggle-track::after { transform: translateX(20px); }
+        .voice-select {
+            width: 100%; padding: 0.6rem 0.875rem;
+            border: 1px solid rgba(255,255,255,0.15); border-radius: 0.5rem;
+            background: rgba(255,255,255,0.08); color: #fff;
+            font-size: 0.875rem; outline: none; cursor: pointer;
+        }
+        .voice-select option { background: #1e293b; color: #fff; }
+
+        /* scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+        @media (max-width: 640px) {
+            .header-title { font-size: 1.2rem; }
+            .message { max-width: 90%; }
+            #sendButton { padding: 0.875rem 1rem; font-size: 0.875rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Blobs -->
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+    <div class="bg-blob bg-blob-3"></div>
+
+    <!-- ===== WELCOME MODAL ===== -->
+    <div id="welcomeModal">
+        <div class="welcome-modal-box">
+            <div class="logo-wrap">
+                <img src="logo.png" alt="JSQB Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'font-size:2rem;font-weight:800;color:#60a5fa\'>JS</span>'">
+            </div>
+            <h1>Welcome to JSQB</h1>
+            <p class="tagline">Your all-round Question Bank — Ask about anything and get instant answers.</p>
+            <div class="terms-box">
+                <strong style="color:rgba(255,255,255,0.85)">Terms of Service & Privacy Policy</strong><br><br>
+                By using JSQB, you agree to the following terms:<br><br>
+                <strong>1. Usage:</strong> JSQB is provided for educational and informational purposes only. You agree not to misuse the service.<br><br>
+                <strong>2. Accuracy:</strong> Answers are generated automatically and may not always be accurate. Always verify important information from official sources.<br><br>
+                <strong>3. Cookies:</strong> We use cookies to remember your preferences (dark mode, custom Q&A, chat history). No personal data is sold or shared with third parties.<br><br>
+                <strong>4. Data:</strong> All data is stored locally in your browser. We do not collect or transmit personal information to external servers.<br><br>
+                <strong>5. Limitations:</strong> JSQB is not liable for any decisions made based on answers provided by the bot.<br><br>
+                <strong>6. Changes:</strong> We reserve the right to modify these terms at any time. Continued use implies acceptance.<br><br>
+                By clicking "Enter", you acknowledge that you have read and agree to these terms.
+            </div>
+            <label class="terms-check">
+                <input type="checkbox" id="termsCheck" onchange="ChatApp.toggleEnterBtn()">
+                I have read and agree to the Terms of Service &amp; Privacy Policy
+            </label>
+            <button class="welcome-enter-btn" id="enterBtn" onclick="ChatApp.dismissWelcome()">
+                Enter JSQB
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== COOKIE BANNER ===== -->
+    <div id="cookieBanner" style="display:none;">
+        <div class="cookie-text">
+            We use <span>cookies</span> to enhance your experience, remember your preferences, and store your chat history — all locally in your browser. No data leaves your device.
+        </div>
+        <div class="cookie-btns">
+            <button class="cookie-btn cookie-decline" onclick="ChatApp.cookieDecline()">Decline</button>
+            <button class="cookie-btn cookie-accept" onclick="ChatApp.cookieAccept()">Accept All</button>
+        </div>
+    </div>
+
+    <!-- ===== HEADER ===== -->
+    <div class="page-header">
+        <div class="header-left">
+            <div class="header-logo">
+                <img src="logo.png" alt="JSQB" onerror="this.style.display='none'; this.parentElement.textContent='JS'">
+            </div>
+            <div class="header-title">JSQB</div>
+        </div>
+        <div class="header-controls">
+            <button class="icon-button" onclick="ChatApp.openVoiceSettings()" title="Voice Settings">
+                <i class="fas fa-sliders-h"></i>
+            </button>
+            <button class="icon-button" onclick="ChatApp.toggleDarkMode()" title="Toggle Dark Mode">
+                <i class="fas fa-moon"></i>
+            </button>
+            <button class="icon-button" onclick="ChatApp.openCustomQAModal()" title="Custom Q&A">
+                <i class="fas fa-plus"></i>
+            </button>
+            <button class="icon-button" onclick="ChatApp.clearChat()" title="Clear Chat">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+            <div class="menu-container">
+                <button class="icon-button" onclick="ChatApp.toggleMenu()" title="Menu">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div class="dropdown-menu" id="menu">
+                    <button class="dropdown-item" onclick="ChatApp.openReportModal()">
+                        <i class="fas fa-flag"></i> Report Issue
+                    </button>
+                    <button class="dropdown-item" onclick="ChatApp.showTermsModal()">
+                        <i class="fas fa-file-contract"></i> Terms & Privacy
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <div class="welcome-message" id="inlineWelcome">
+            <h2>Ask me anything</h2>
+            <p>Science, history, tech, coding, math — I'm here to help with everything</p>
+            <div class="suggestion-chips">
+                <div class="chip" onclick="ChatApp.sendSuggestion('What is JavaScript?')">What is JavaScript?</div>
+                <div class="chip" onclick="ChatApp.sendSuggestion('How does the internet work?')">How does the internet work?</div>
+                <div class="chip" onclick="ChatApp.sendSuggestion('Explain quantum computing')">Quantum computing</div>
+                <div class="chip" onclick="ChatApp.sendSuggestion('What is machine learning?')">Machine learning</div>
+                <div class="chip" onclick="ChatApp.sendSuggestion('calculate 25 * 48')">Calculate 25 × 48</div>
+                <div class="chip" onclick="ChatApp.sendSuggestion('What is the theory of relativity?')">Theory of relativity</div>
+            </div>
+        </div>
+        <div id="chat-box"></div>
+    </div>
+
+    <div class="input-area">
+        <div class="input-wrapper">
+            <button onclick="ChatApp.startSpeechRecognition()" class="mic-button" id="micButton" title="Voice Input">
+                <i class="fa fa-microphone"></i>
+            </button>
+            <button onclick="ChatApp.openCalculatorModal()" class="calc-button" title="Calculator">
+                <i class="fa fa-calculator"></i>
+            </button>
+            <div class="input-field-wrapper">
+                <input type="text" id="questionInput" placeholder="Ask about anything — science, tech, history, math...">
+            </div>
+            <button id="sendButton">Send</button>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Report Issue</h2>
+                <button class="close-button" onclick="ChatApp.closeReportModal()">×</button>
+            </div>
+            <p>Found a bug or have feedback? Let us know!</p>
+            <form id="reportForm">
+                <div class="form-group">
+                    <input type="text" id="reportSubject" placeholder="Describe the issue..." class="form-input" required>
+                </div>
+                <button type="submit" class="btn-primary">Submit Report</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom Q&A Modal -->
+    <div id="customQAModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Custom Q&A Manager</h2>
+                <button class="close-button" onclick="ChatApp.closeCustomQAModal()">×</button>
+            </div>
+            <p>Add custom question-answer pairs that JSQB will remember</p>
+            <form id="customQAForm">
+                <div class="form-group">
+                    <label>Question</label>
+                    <input type="text" id="customQuestion" class="form-input" placeholder="Enter exact question..." required>
+                </div>
+                <div class="form-group">
+                    <label>Answer</label>
+                    <textarea id="customAnswer" class="form-textarea" placeholder="Enter answer..." required></textarea>
+                </div>
+                <button type="submit" class="btn-primary">Add Q&A</button>
+            </form>
+            <div class="custom-qa-list" id="customQAList"></div>
+        </div>
+    </div>
+
+    <!-- Calculator Modal -->
+    <div id="calculatorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Calculator</h2>
+                <button class="close-button" onclick="ChatApp.closeCalculatorModal()">×</button>
+            </div>
+            <div class="calculator">
+                <div class="calc-display" id="calcDisplay">0</div>
+                <div class="calc-buttons">
+                    <button class="calc-btn clear" onclick="ChatApp.calcClear()">C</button>
+                    <button class="calc-btn operator" onclick="ChatApp.calcAppend('/')">/</button>
+                    <button class="calc-btn operator" onclick="ChatApp.calcAppend('*')">×</button>
+                    <button class="calc-btn operator" onclick="ChatApp.calcAppend('-')">−</button>
+                    <button class="calc-btn" onclick="ChatApp.calcAppend('7')">7</button>
+                    <button class="calc-btn" onclick="ChatApp.calcAppend('8')">8</button>
+                    <button class="calc-btn" onclick="ChatApp.calcAppend('9')">9</button>
+                    <button class="calc-btn operator" onclick="ChatApp.calcAppend('+')">+</button>
+                    <button class="calc-btn" onclick="ChatApp.calcAppend('4')">4</button>
+                    <button class="calc-btn" onclick="ChatApp.calcAppend('5')">5</button>
+                    <button class="calc-btn" onclick="ChatApp.calcAppend('6')">6</button>
+                    <button class="calc-btn operator" onclick="ChatApp.calcAppend('**')">^</button>
+                    <button class="calc-btn" onclick="ChatApp.calcAppend('1')">1</button>
+                    <button class="calc-btn" onclick="ChatApp.calcAppend('2')">2</button>
+                    <button class="calc-btn" onclick="ChatApp.calcAppend('3')">3</button>
+                    <button class="calc-btn operator" onclick="ChatApp.calcAppend('(')">(</button>
+                    <button class="calc-btn" onclick="ChatApp.calcAppend('0')">0</button>
+                    <button class="calc-btn" onclick="ChatApp.calcAppend('.')">.</button>
+                    <button class="calc-btn equals" onclick="ChatApp.calcCalculate()">=</button>
+                    <button class="calc-btn operator" onclick="ChatApp.calcAppend(')')">)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms Modal (re-viewable) -->
+    <div id="termsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Terms & Privacy</h2>
+                <button class="close-button" onclick="document.getElementById('termsModal').style.display='none'; ChatApp.toggleMenu()">×</button>
+            </div>
+            <p style="color:rgba(255,255,255,0.65);font-size:0.875rem;line-height:1.7;">
+                <strong style="color:#fff">Terms of Service & Privacy Policy</strong><br><br>
+                <strong>1. Usage:</strong> JSQB is for educational/informational purposes only. Do not misuse the service.<br><br>
+                <strong>2. Accuracy:</strong> Answers are auto-generated and may contain errors. Verify critical information from authoritative sources.<br><br>
+                <strong>3. Cookies:</strong> We use localStorage to remember preferences, custom Q&A, and recent chats. No personal data is shared externally.<br><br>
+                <strong>4. Data:</strong> All data stays in your browser. Nothing is transmitted to external servers.<br><br>
+                <strong>5. Liability:</strong> JSQB is not liable for decisions made based on its answers.<br><br>
+                <strong>6. Changes:</strong> Terms may be updated at any time. Continued use implies acceptance.<br><br>
+                © 2026 Hanuveer · <a href="https://hanuveer1904.github.io" style="color:#60a5fa">hanuveer1904.github.io</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Voice Settings Modal -->
+    <div id="voiceSettingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Voice Settings</h2>
+                <button class="close-button" onclick="ChatApp.closeVoiceSettings()">×</button>
+            </div>
+            <p>Control how JSQB reads answers aloud to you.</p>
+
+            <!-- Mute toggle -->
+            <div class="voice-mute-row">
+                <span>Talkback Enabled</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="voiceEnabled" checked onchange="ChatApp.saveVoiceSettings()">
+                    <div class="toggle-track"></div>
+                </label>
+            </div>
+
+            <!-- Voice selector -->
+            <div class="voice-setting">
+                <label>Voice <span id="voiceNameDisplay">—</span></label>
+                <select class="voice-select" id="voiceSelect" onchange="ChatApp.saveVoiceSettings()"></select>
+            </div>
+
+            <!-- Speed -->
+            <div class="voice-setting">
+                <label>Speed <span id="rateVal">1.0×</span></label>
+                <input type="range" class="voice-slider" id="voiceRate" min="0.5" max="2.5" step="0.1" value="1.0"
+                    oninput="document.getElementById('rateVal').textContent=parseFloat(this.value).toFixed(1)+'×'; ChatApp.saveVoiceSettings()">
+            </div>
+
+            <!-- Pitch -->
+            <div class="voice-setting">
+                <label>Pitch <span id="pitchVal">1.0</span></label>
+                <input type="range" class="voice-slider" id="voicePitch" min="0.1" max="2.0" step="0.1" value="1.0"
+                    oninput="document.getElementById('pitchVal').textContent=parseFloat(this.value).toFixed(1); ChatApp.saveVoiceSettings()">
+            </div>
+
+            <!-- Volume -->
+            <div class="voice-setting">
+                <label>Volume <span id="volVal">100%</span></label>
+                <input type="range" class="voice-slider" id="voiceVolume" min="0" max="1" step="0.05" value="1"
+                    oninput="document.getElementById('volVal').textContent=Math.round(this.value*100)+'%'; ChatApp.saveVoiceSettings()">
+            </div>
+
+            <button class="voice-preview-btn" onclick="ChatApp.previewVoice()">
+                <i class="fas fa-play"></i> Preview Voice
+            </button>
+        </div>
+    </div>
+
+    <script>
+    // ===== COMPREHENSIVE JS KNOWLEDGE BASE =====
+    const JS_KB = {
+        "what is javascript": "JavaScript is a high-level, interpreted programming language primarily used for adding interactivity and dynamic behavior to websites. It runs in the browser (and on servers via Node.js), supports object-oriented, functional, and event-driven programming paradigms, and is one of the core technologies of the web alongside HTML and CSS.",
+        "explain closures": "A closure in JavaScript is a function that retains access to its outer (enclosing) scope's variables even after the outer function has returned. Example:\n\nfunction counter() {\n  let count = 0;\n  return function() {\n    return ++count;\n  };\n}\nconst inc = counter();\nconsole.log(inc()); // 1\nconsole.log(inc()); // 2\n\nThe inner function 'closes over' the count variable, keeping it alive.",
+        "what is async/await": "async/await is syntactic sugar over Promises introduced in ES2017. An async function always returns a Promise; the await keyword pauses execution inside the function until the awaited Promise resolves.\n\nasync function fetchData() {\n  const res = await fetch('https://api.example.com/data');\n  const json = await res.json();\n  return json;\n}\n\nThis makes asynchronous code look and read like synchronous code.",
+        "what is a promise": "A Promise is an object representing the eventual completion (or failure) of an asynchronous operation. It has three states: pending, fulfilled, and rejected. Promises allow chaining with .then() and .catch() to handle async results cleanly.",
+        "what is the dom": "The DOM (Document Object Model) is a programming interface for HTML and XML documents. It represents the page as a tree of nodes (elements, text, etc.) that JavaScript can dynamically read and modify — changing content, style, and structure on the fly.",
+        "what is event bubbling": "Event bubbling is the process where an event triggered on a child element propagates (bubbles) up through all parent elements. For example, clicking a button will also trigger click listeners on its parent div, then body, then document. You can stop this with event.stopPropagation().",
+        "what is hoisting": "Hoisting is JavaScript's behavior of moving variable and function declarations to the top of their scope before code execution. Function declarations are fully hoisted (can be called before declaration). var variables are hoisted but initialized as undefined. let and const are hoisted but not initialized (temporal dead zone).",
+        "difference between var let const": "var is function-scoped, hoisted, and can be redeclared. let and const are block-scoped and not redeclarable. let can be reassigned; const cannot be reassigned (though object properties can still be mutated). Prefer const by default, use let when reassignment is needed, avoid var in modern code.",
+        "what is prototype": "Every JavaScript object has an internal [[Prototype]] link to another object (or null). This forms the prototype chain — when you access a property, JS looks up the chain until it finds it or reaches null. This is the basis of JavaScript's inheritance system.",
+        "what is arrow function": "Arrow functions are a compact syntax for writing functions: const fn = (a, b) => a + b. Key differences from regular functions: they don't have their own 'this', 'arguments', 'super', or 'new.target'. They cannot be used as constructors. Great for callbacks and short functions.",
+        "what is this keyword": "The 'this' keyword refers to the object that is currently executing the function. Its value depends on the call context: in a method, it's the object; in a regular function, it's the global object (or undefined in strict mode); in an arrow function, it's inherited from the enclosing lexical scope.",
+        "what is event loop": "The event loop is the mechanism that handles asynchronous operations in JavaScript. JS is single-threaded, but the event loop allows it to perform non-blocking I/O by offloading operations and processing callbacks from the task queue (macrotasks) and microtask queue when the call stack is empty.",
+        "what is destructuring": "Destructuring is ES6 syntax to extract values from arrays or properties from objects into distinct variables:\n\n// Array\nconst [a, b] = [1, 2];\n\n// Object\nconst { name, age } = person;\n\nIt can also be used in function parameters and with default values.",
+        "what is spread operator": "The spread operator (...) expands an iterable (array, string, object) into individual elements. Uses: copying arrays/objects, merging them, passing array elements as function arguments.\n\nconst arr2 = [...arr1, 4, 5];\nconst obj2 = {...obj1, newProp: 'value'};",
+        "what is rest parameter": "Rest parameters (...args) collect an indefinite number of arguments into an array:\n\nfunction sum(...nums) {\n  return nums.reduce((a, b) => a + b, 0);\n}\nsum(1,2,3,4); // 10\n\nMust be the last parameter in a function.",
+        "what is a callback": "A callback is a function passed as an argument to another function, to be called later (often asynchronously). Example:\n\nsetTimeout(() => console.log('done'), 1000);\n\nCallbacks were the original way to handle async code before Promises.",
+        "what is null vs undefined": "undefined means a variable has been declared but not assigned a value. null is an intentional absence of any value — it must be explicitly assigned. typeof undefined is 'undefined'; typeof null is 'object' (a historical bug in JS). Both are falsy.",
+        "what is type coercion": "Type coercion is JavaScript's automatic conversion of values from one type to another, often during comparisons or operations. Example: '5' + 3 gives '53' (string), but '5' - 3 gives 2 (number). Using === (strict equality) prevents coercion. This is a common source of bugs.",
+        "what is es6": "ES6 (ECMAScript 2015) is a major update to JavaScript that introduced: let/const, arrow functions, classes, template literals, destructuring, spread/rest operators, Promises, modules (import/export), default parameters, Map, Set, Symbol, and much more.",
+        "what is a class": "Classes in JavaScript (introduced in ES6) are syntactic sugar over prototype-based inheritance. They provide a cleaner way to create constructor functions and prototype chains:\n\nclass Animal {\n  constructor(name) { this.name = name; }\n  speak() { console.log(this.name + ' makes a sound.'); }\n}\n\nclass Dog extends Animal {\n  speak() { console.log(this.name + ' barks.'); }\n}",
+        "what is map and set": "Map is a collection of key-value pairs where keys can be any type (unlike plain objects). Set is a collection of unique values. Both are iterable ES6 data structures.\n\nconst map = new Map();\nmap.set('key', 'value');\n\nconst set = new Set([1, 2, 2, 3]); // {1, 2, 3}",
+        "what is nan": "NaN stands for 'Not a Number'. It is a special numeric value that results from invalid math operations (like 0/0 or parseInt('abc')). Uniquely, NaN is not equal to itself: NaN === NaN is false. Use Number.isNaN() to check for it.",
+        "what is strict mode": "'use strict'; enables strict mode in JavaScript, which catches common coding mistakes and unsafe actions. It prevents use of undeclared variables, eliminates silent errors, forbids duplicate parameter names, and blocks certain syntax reserved for future versions.",
+        "what is json": "JSON (JavaScript Object Notation) is a lightweight data-interchange format based on JS object syntax, but it's text-only. Use JSON.stringify() to convert a JS object to a JSON string, and JSON.parse() to convert a JSON string back to a JS object.",
+        "what is fetch api": "The Fetch API provides a modern, Promise-based way to make HTTP requests in the browser. It replaces XMLHttpRequest:\n\nfetch('https://api.example.com/data')\n  .then(res => res.json())\n  .then(data => console.log(data))\n  .catch(err => console.error(err));",
+        "what is localStorage": "localStorage is a Web Storage API that lets you store key-value string data in the browser persistently (survives page reloads and browser restarts). Use localStorage.setItem(key, value), getItem(key), removeItem(key), and clear().",
+        "what is sessionStorage": "sessionStorage is similar to localStorage but the data is cleared when the browser tab/session is closed. It is scoped to the tab and not shared between tabs.",
+        "what is the difference between == and ===": "== (loose equality) performs type coercion before comparing. === (strict equality) checks both value and type without coercion. Example: 0 == false is true, but 0 === false is false. Always prefer === to avoid unexpected coercion bugs.",
+        "what are higher order functions": "Higher-order functions are functions that take other functions as arguments or return functions as their result. Examples: map(), filter(), reduce(), forEach(). They are a key part of functional programming in JavaScript.",
+        "what is object destructuring": "Object destructuring extracts properties from an object into variables:\n\nconst { name, age, city = 'Unknown' } = person;\n\nYou can rename properties: const { name: fullName } = person; and provide default values.",
+        "what is promise chaining": "Promise chaining links multiple .then() calls where each returns a new promise, allowing sequential async operations to be written in a flat, readable way instead of nested callbacks:\n\nfetch(url).then(r => r.json()).then(data => process(data)).catch(handleError);",
+        "what is optional chaining": "Optional chaining (?.) lets you safely access deeply nested object properties without throwing an error if an intermediate value is null or undefined:\n\nconst city = user?.address?.city;\n// Returns undefined instead of throwing if user or address is null",
+        "what is nullish coalescing": "The nullish coalescing operator (??) returns the right-hand operand when the left-hand is null or undefined (unlike || which also triggers for 0, false, and ''):\n\nconst name = user.name ?? 'Anonymous';"
+    };
+
+    const ChatApp = {
+        state: { isFetching: false, typingTimeout: null, loadingMessageId: null, calcExpression: "" },
+        casualResponses: {
+            "hello": "Hello! How can I assist you with JavaScript today?",
+            "hi": "Hi there! What would you like to know about JavaScript?",
+            "hey": "Hey! Ready to help with your JavaScript questions.",
+            "good morning": "Good morning! Ready to dive into some JavaScript?",
+            "good afternoon": "Good afternoon! What JavaScript topic can I help with?",
+            "good evening": "Good evening! How can I assist you with JS?",
+            "who are you": "I'm JSQB — your all-round Question Bank! Ask me about tech, science, history, math, coding, and more.",
+            "how are you": "Running great and ready to answer anything you throw at me!",
+            "what can you do": "I can answer questions on almost any topic — JavaScript, programming, science, history, math, general knowledge, and more. I also have a built-in calculator. Try 'calculate 15 * 8' or ask me anything!",
+            "thank you": "You're welcome! Feel free to ask anything else about JavaScript.",
+            "thanks": "Happy to help! Any more JavaScript questions?",
+            "bye": "Goodbye! Keep coding in JavaScript!",
+            "help": "Just type your JavaScript question! Try asking: 'What is a closure?', 'Explain promises', 'What is async/await?', or 'calculate 25 * 4'."
+        },
+        init() {
+            this.setupEventListeners();
+            this.loadDarkMode();
+            this.checkWelcomeAndCookies();
+        },
+        checkWelcomeAndCookies() {
+            const agreed = localStorage.getItem("jsqb_agreed");
+            if (agreed) {
+                document.getElementById("welcomeModal").style.display = "none";
+                this.loadChatHistory();
+                this.renderCustomQAList();
+                // Show cookie banner if not yet decided
+                if (!localStorage.getItem("jsqb_cookies")) {
+                    setTimeout(() => {
+                        document.getElementById("cookieBanner").style.display = "flex";
+                    }, 800);
+                }
+            }
+        },
+        toggleEnterBtn() {
+            const btn = document.getElementById("enterBtn");
+            if (document.getElementById("termsCheck").checked) {
+                btn.classList.add("active");
+            } else {
+                btn.classList.remove("active");
+            }
+        },
+        dismissWelcome() {
+            localStorage.setItem("jsqb_agreed", "true");
+            const modal = document.getElementById("welcomeModal");
+            modal.classList.add("hide");
+            setTimeout(() => {
+                modal.style.display = "none";
+                this.loadChatHistory();
+                this.renderCustomQAList();
+                if (!localStorage.getItem("jsqb_cookies")) {
+                    setTimeout(() => {
+                        document.getElementById("cookieBanner").style.display = "flex";
+                    }, 600);
+                }
+            }, 400);
+        },
+        cookieAccept() {
+            localStorage.setItem("jsqb_cookies", "accepted");
+            this.hideCookieBanner();
+        },
+        cookieDecline() {
+            localStorage.setItem("jsqb_cookies", "declined");
+            this.hideCookieBanner();
+        },
+        hideCookieBanner() {
+            const banner = document.getElementById("cookieBanner");
+            banner.classList.add("hide");
+            setTimeout(() => banner.style.display = "none", 300);
+        },
+        showTermsModal() {
+            document.getElementById("termsModal").style.display = "block";
+        },
+        setupEventListeners() {
+            const input = document.getElementById("questionInput");
+            const sendBtn = document.getElementById("sendButton");
+            input.addEventListener("keypress", (e) => {
+                if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); this.getAnswer(); }
+            });
+            sendBtn.addEventListener("click", () => this.getAnswer());
+            document.getElementById("reportForm").addEventListener("submit", (e) => {
+                e.preventDefault(); alert("Thank you for your report!");
+                e.target.reset(); this.closeReportModal();
+            });
+            document.getElementById("customQAForm").addEventListener("submit", (e) => {
+                e.preventDefault(); this.addCustomQA();
+            });
+            document.addEventListener("click", (e) => {
+                const menu = document.getElementById("menu");
+                if (!e.target.closest(".menu-container")) menu.classList.remove("show");
+            });
+        },
+        loadDarkMode() {
+            if (localStorage.getItem("darkMode") === "true") document.body.classList.add("dark-mode");
+        },
+        toggleDarkMode() {
+            document.body.classList.toggle("dark-mode");
+            localStorage.setItem("darkMode", String(document.body.classList.contains("dark-mode")));
+        },
+        saveChatHistory(question, answer) {
+            if (localStorage.getItem("jsqb_cookies") === "declined") return;
+            let history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+            history.push({ question, answer, timestamp: Date.now() });
+            if (history.length > 100) history = history.slice(-100);
+            localStorage.setItem("chatHistory", JSON.stringify(history));
+        },
+        loadChatHistory() {
+            const history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+            const last5 = history.slice(-5);
+            last5.forEach(item => {
+                this.appendMessage("user", item.question, false);
+                this.appendMessage("bot", item.answer, false);
+            });
+            if (last5.length > 0) this.hideInlineWelcome();
+        },
+        clearChat() {
+            document.getElementById("chat-box").innerHTML = "";
+            document.getElementById("inlineWelcome").style.display = "block";
+            localStorage.removeItem("chatHistory");
+        },
+        hideInlineWelcome() {
+            const w = document.getElementById("inlineWelcome");
+            if (w) w.style.display = "none";
+        },
+        sendSuggestion(text) {
+            document.getElementById("questionInput").value = text;
+            this.getAnswer();
+        },
+        setControlsState(disabled) {
+            document.getElementById("questionInput").disabled = disabled;
+            document.getElementById("sendButton").disabled = disabled;
+            document.getElementById("micButton").disabled = disabled;
+        },
+        async getAnswer() {
+            const inputField = document.getElementById("questionInput");
+            const userInput = inputField.value.trim();
+            if (!userInput || this.state.isFetching) return;
+            this.hideInlineWelcome();
+            this.appendMessage("user", userInput);
+            inputField.value = "";
+            const lower = userInput.toLowerCase().trim();
+
+            // Calculate
+            if (lower.startsWith("calculate ") || lower.startsWith("calc ")) {
+                const expr = userInput.substring(userInput.indexOf(" ") + 1);
+                await this.handleCalculation(expr);
+                return;
+            }
+            // Casual
+            if (this.casualResponses[lower]) {
+                const ans = this.casualResponses[lower];
+                await this.typeMessage("bot", ans);
+                this.saveChatHistory(userInput, ans);
+                return;
+            }
+            // Custom Q&A
+            const customAns = this.checkCustomQA(lower);
+            if (customAns) {
+                await this.typeMessage("bot", customAns);
+                this.saveChatHistory(userInput, customAns);
+                return;
+            }
+            // Built-in JS Knowledge Base
+            const kbAnswer = this.searchKB(lower);
+            if (kbAnswer) {
+                await this.typeMessage("bot", kbAnswer);
+                this.saveChatHistory(userInput, kbAnswer);
+                return;
+            }
+            // Wikipedia fallback
+            await this.fetchWikipediaSearch(userInput);
+        },
+        searchKB(query) {
+            // Exact match
+            if (JS_KB[query]) return JS_KB[query];
+            // Partial / keyword match
+            const keys = Object.keys(JS_KB);
+            // Try if query contains a key
+            for (const key of keys) {
+                if (query.includes(key) || key.includes(query)) return JS_KB[key];
+            }
+            // Keyword scoring
+            const queryWords = query.split(/\s+/).filter(w => w.length > 2);
+            let bestScore = 0, bestAns = null;
+            for (const key of keys) {
+                const keyWords = key.split(/\s+/);
+                let score = 0;
+                for (const qw of queryWords) {
+                    if (keyWords.some(kw => kw.includes(qw) || qw.includes(kw))) score++;
+                }
+                if (score > bestScore) { bestScore = score; bestAns = JS_KB[key]; }
+            }
+            return bestScore >= 2 ? bestAns : null;
+        },
+        async handleCalculation(expression) {
+            try {
+                const result = eval(expression.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-'));
+                const answer = `The result of ${expression} = ${result}`;
+                await this.typeMessage("bot", answer);
+                this.saveChatHistory(`calculate ${expression}`, answer);
+            } catch {
+                const answer = "I couldn't calculate that. Please check your expression.";
+                await this.typeMessage("bot", answer);
+            }
+        },
+        checkCustomQA(question) {
+            const customQAs = JSON.parse(localStorage.getItem("customQAs") || "[]");
+            const match = customQAs.find(qa => qa.question.toLowerCase() === question);
+            return match ? match.answer : null;
+        },
+        addCustomQA() {
+            const question = document.getElementById("customQuestion").value.trim();
+            const answer = document.getElementById("customAnswer").value.trim();
+            if (!question || !answer) return;
+            let customQAs = JSON.parse(localStorage.getItem("customQAs") || "[]");
+            customQAs.push({ question, answer, id: Date.now() });
+            localStorage.setItem("customQAs", JSON.stringify(customQAs));
+            document.getElementById("customQAForm").reset();
+            this.renderCustomQAList();
+        },
+        deleteCustomQA(id) {
+            let customQAs = JSON.parse(localStorage.getItem("customQAs") || "[]");
+            customQAs = customQAs.filter(qa => qa.id !== id);
+            localStorage.setItem("customQAs", JSON.stringify(customQAs));
+            this.renderCustomQAList();
+        },
+        renderCustomQAList() {
+            const customQAs = JSON.parse(localStorage.getItem("customQAs") || "[]");
+            const listContainer = document.getElementById("customQAList");
+            if (!listContainer) return;
+            if (customQAs.length === 0) {
+                listContainer.innerHTML = '<p style="color:rgba(255,255,255,0.5);text-align:center;margin-top:1rem">No custom Q&A pairs yet</p>';
+                return;
+            }
+            listContainer.innerHTML = customQAs.map(qa => `
+                <div class="qa-item">
+                    <div class="qa-item-question">Q: ${qa.question}</div>
+                    <div class="qa-item-answer">A: ${qa.answer}</div>
+                    <div class="qa-item-actions">
+                        <button class="btn-small btn-delete" onclick="ChatApp.deleteCustomQA(${qa.id})">Delete</button>
+                    </div>
+                </div>`).join('');
+        },
+        showLoading() {
+            const chatBox = document.getElementById("chat-box");
+            const div = document.createElement("div");
+            div.classList.add("message", "bot-message", "loading-message");
+            div.id = "loadingMessage";
+            const span = document.createElement("span"); span.textContent = "Thinking";
+            const dots = document.createElement("div"); dots.className = "typing-dots";
+            for (let i = 0; i < 3; i++) {
+                const d = document.createElement("div"); d.className = "typing-dot"; dots.appendChild(d);
+            }
+            div.appendChild(span); div.appendChild(dots);
+            chatBox.appendChild(div); this.scrollToBottom();
+        },
+        removeLoading() {
+            const l = document.getElementById("loadingMessage"); if (l) l.remove();
+        },
+        async fetchWikipediaSearch(query) {
+            this.state.isFetching = true; this.setControlsState(true); this.showLoading();
+            try {
+                const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`);
+                if (!res.ok) throw new Error("Not found");
+                const data = await res.json();
+                this.removeLoading();
+                const answer = (data && data.extract) ? data.extract : "I couldn't find an exact answer. Try rephrasing or asking a JavaScript-specific question!";
+                await this.typeMessage("bot", answer);
+                this.saveChatHistory(query, answer);
+            } catch {
+                this.removeLoading();
+                const answer = "I couldn't find an answer for that right now. Try rephrasing your question, or ask about tech, science, history, math, or coding!";
+                await this.typeMessage("bot", answer);
+                this.saveChatHistory(query, answer);
+            } finally {
+                this.state.isFetching = false; this.setControlsState(false);
+            }
+        },
+        appendMessage(sender, text, _ = true) {
+            const chatBox = document.getElementById("chat-box");
+            const div = document.createElement("div");
+            div.classList.add("message", sender === "user" ? "user-message" : "bot-message");
+            div.style.whiteSpace = "pre-wrap"; div.textContent = text;
+            chatBox.appendChild(div); this.scrollToBottom();
+        },
+        async typeMessage(sender, text) {
+            const chatBox = document.getElementById("chat-box");
+            const div = document.createElement("div");
+            div.classList.add("message", sender === "user" ? "user-message" : "bot-message");
+            div.style.whiteSpace = "pre-wrap";
+            chatBox.appendChild(div);
+            let index = 0;
+            return new Promise(resolve => {
+                const type = () => {
+                    if (index < text.length) {
+                        div.textContent += text.charAt(index++);
+                        this.scrollToBottom();
+                        this.state.typingTimeout = setTimeout(type, 12);
+                    } else {
+                        this.speakText(text);
+                        this.state.typingTimeout = null;
+                        resolve();
+                    }
+                };
+                if (this.state.typingTimeout) clearTimeout(this.state.typingTimeout);
+                type();
+            });
+        },
+        scrollToBottom() {
+            const cb = document.getElementById("chat-box");
+            cb.scrollTop = cb.scrollHeight;
+        },
+        speakText(text) {
+            if (!("speechSynthesis" in window)) return;
+            const enabled = document.getElementById("voiceEnabled")?.checked ?? true;
+            if (!enabled) return;
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text.substring(0, 300));
+            u.lang = "en-US";
+            u.rate   = parseFloat(document.getElementById("voiceRate")?.value   ?? 1.0);
+            u.pitch  = parseFloat(document.getElementById("voicePitch")?.value  ?? 1.0);
+            u.volume = parseFloat(document.getElementById("voiceVolume")?.value ?? 1.0);
+            const voiceSelect = document.getElementById("voiceSelect");
+            if (voiceSelect && voiceSelect.value) {
+                const voices = speechSynthesis.getVoices();
+                const chosen = voices.find(v => v.name === voiceSelect.value);
+                if (chosen) u.voice = chosen;
+            }
+            speechSynthesis.speak(u);
+        },
+        previewVoice() {
+            this.speakText("Hello! I'm JSQB, your all-round question bank. Ask me anything!");
+        },
+        openVoiceSettings() {
+            document.getElementById("voiceSettingsModal").style.display = "block";
+            this.loadVoiceSettings();
+            this.populateVoices();
+        },
+        closeVoiceSettings() {
+            document.getElementById("voiceSettingsModal").style.display = "none";
+        },
+        populateVoices() {
+            const select = document.getElementById("voiceSelect");
+            if (!select) return;
+            const voices = speechSynthesis.getVoices();
+            const saved = localStorage.getItem("jsqb_voiceName") || "";
+            select.innerHTML = voices.map(v =>
+                `<option value="${v.name}" ${v.name === saved ? "selected" : ""}>${v.name} (${v.lang})</option>`
+            ).join("");
+            if (voices.length > 0) {
+                const cur = select.options[select.selectedIndex];
+                document.getElementById("voiceNameDisplay").textContent = cur ? cur.value.split(" ")[0] : "—";
+            }
+        },
+        saveVoiceSettings() {
+            localStorage.setItem("jsqb_voiceEnabled", document.getElementById("voiceEnabled").checked);
+            localStorage.setItem("jsqb_voiceRate",    document.getElementById("voiceRate").value);
+            localStorage.setItem("jsqb_voicePitch",   document.getElementById("voicePitch").value);
+            localStorage.setItem("jsqb_voiceVolume",  document.getElementById("voiceVolume").value);
+            const sel = document.getElementById("voiceSelect");
+            if (sel) localStorage.setItem("jsqb_voiceName", sel.value);
+            const cur = sel?.options[sel.selectedIndex];
+            if (cur) document.getElementById("voiceNameDisplay").textContent = cur.value.split(" ")[0];
+        },
+        loadVoiceSettings() {
+            const rate   = localStorage.getItem("jsqb_voiceRate")    ?? "1.0";
+            const pitch  = localStorage.getItem("jsqb_voicePitch")   ?? "1.0";
+            const vol    = localStorage.getItem("jsqb_voiceVolume")  ?? "1";
+            const enabled = localStorage.getItem("jsqb_voiceEnabled") !== "false";
+            document.getElementById("voiceRate").value    = rate;   document.getElementById("rateVal").textContent  = parseFloat(rate).toFixed(1)+"×";
+            document.getElementById("voicePitch").value   = pitch;  document.getElementById("pitchVal").textContent = parseFloat(pitch).toFixed(1);
+            document.getElementById("voiceVolume").value  = vol;    document.getElementById("volVal").textContent   = Math.round(vol*100)+"%";
+            document.getElementById("voiceEnabled").checked = enabled;
+        },
+        startSpeechRecognition() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) { alert("Speech Recognition not supported in this browser."); return; }
+            const recognition = new SR();
+            recognition.continuous = false; recognition.interimResults = false; recognition.lang = "en-US";
+            recognition.onstart = () => { document.getElementById("micButton").style.color = "#ef4444"; };
+            recognition.onresult = (e) => { document.getElementById("questionInput").value = e.results[0][0].transcript; };
+            recognition.onend = () => { document.getElementById("micButton").style.color = ""; };
+            recognition.onerror = () => alert("Speech recognition error. Please try again.");
+            recognition.start();
+        },
+        toggleMenu() {
+            document.getElementById("menu").classList.toggle("show");
+        },
+        openReportModal() { document.getElementById("reportModal").style.display = "block"; this.toggleMenu(); },
+        closeReportModal() { document.getElementById("reportModal").style.display = "none"; },
+        openCustomQAModal() { document.getElementById("customQAModal").style.display = "block"; this.renderCustomQAList(); },
+        closeCustomQAModal() { document.getElementById("customQAModal").style.display = "none"; },
+        openCalculatorModal() { document.getElementById("calculatorModal").style.display = "block"; this.calcClear(); },
+        closeCalculatorModal() { document.getElementById("calculatorModal").style.display = "none"; },
+        calcAppend(v) { this.state.calcExpression += v; document.getElementById("calcDisplay").textContent = this.state.calcExpression || "0"; },
+        calcClear() { this.state.calcExpression = ""; document.getElementById("calcDisplay").textContent = "0"; },
+        calcCalculate() {
+            try {
+                const result = eval(this.state.calcExpression);
+                document.getElementById("calcDisplay").textContent = result;
+                this.state.calcExpression = String(result);
+            } catch {
+                document.getElementById("calcDisplay").textContent = "Error";
+                this.state.calcExpression = "";
+            }
+        }
+    };
+
+    window.onclick = function(e) {
+        ["reportModal","customQAModal","calculatorModal","termsModal","voiceSettingsModal"].forEach(id => {
+            const m = document.getElementById(id);
+            if (e.target === m) m.style.display = "none";
+        });
+    };
+
+    // Populate voices once they load (some browsers need this event)
+    if (window.speechSynthesis) {
+        speechSynthesis.onvoiceschanged = () => {
+            if (document.getElementById("voiceSettingsModal").style.display === "block") {
+                ChatApp.populateVoices();
+            }
+        };
+    }
+
+    document.addEventListener("DOMContentLoaded", () => ChatApp.init());
+    </script>
+</body>
+</html>

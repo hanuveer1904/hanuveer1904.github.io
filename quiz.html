@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+}
+
+.quiz-container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+}
+
+.question {
+    margin-bottom: 15px;
+}
+
+.option {
+    display: block;
+    margin: 5px 0;
+}
+
+button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.result {
+    text-align: center;
+    font-size: 20px;
+    margin-top: 20px;
+}
+</style>
+    <title>Quiz</title>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>Quiz for Class 6 to 8</h1>
+        <div id="quiz"></div>
+        <button id="submit">Submit</button>
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>const quizData = [
+    {
+        question: "What is the capital of France?",
+        options: ["Berlin", "Madrid", "Paris", "Rome"],
+        answer: "Paris"
+    },
+    {
+        question: "Which planet is known as the Red Planet?",
+        options: ["Earth", "Mars", "Jupiter", "Saturn"],
+        answer: "Mars"
+    },
+    {
+        question: "Who wrote 'Romeo and Juliet'?",
+        options: ["Charles Dickens", "Mark Twain", "William Shakespeare", "Jane Austen"],
+        answer: "William Shakespeare"
+    },
+    {
+        question: "What is the largest mammal in the world?",
+        options: ["Elephant", "Blue Whale", "Giraffe", "Shark"],
+        answer: "Blue Whale"
+    },
+    {
+        question: "What is the boiling point of water?",
+        options: ["0°C", "50°C", "100°C", "200°C"],
+        answer: "100°C"
+    }
+];
+
+const quizContainer = document.getElementById("quiz");
+const submitButton = document.getElementById("submit");
+const resultContainer = document.getElementById("result");
+
+function loadQuiz() {
+    quizData.forEach((data, index) => {
+        const questionElement = document.createElement("div");
+        questionElement.classList.add("question");
+        questionElement.innerHTML = `<h3>${data.question}</h3>`;
+        
+        data.options.forEach(option => {
+            questionElement.innerHTML += `
+                <label class="option">
+                    <input type="radio" name="question${index}" value="${option}"> ${option}
+                </label>
+            `;
+        });
+
+        quizContainer.appendChild(questionElement);
+    });
+}
+
+function getSelectedAnswers() {
+    const answers = [];
+    quizData.forEach((_, index) => {
+        const selected = document.querySelector(`input[name="question${index}"]:checked`);
+        answers.push(selected ? selected.value : null);
+    });
+    return answers;
+}
+
+function calculateScore(answers) {
+    let score = 0;
+    answers.forEach((answer, index) => {
+        if (answer === quizData[index].answer) {
+            score++;
+        }
+    });
+    return score;
+}
+
+submitButton.addEventListener("click", () => {
+    const selectedAnswers = getSelectedAnswers();
+    const score = calculateScore(selectedAnswers);
+    resultContainer.textContent = `You scored ${score} out of ${quizData.length}.`;
+});
+
+loadQuiz();
+</script>
+</body>
+</html>

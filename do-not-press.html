@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Totally Normal Game</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{box-sizing:border-box;font-family:system-ui}
+body{
+  margin:0;
+  height:100vh;
+  background:radial-gradient(circle at top,#1a1f3b,#0b0f1a);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:#eaeaff;
+  overflow:hidden;
+}
+.panel{
+  width:420px;
+  padding:20px;
+  border-radius:18px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.15);
+  backdrop-filter:blur(14px);
+  text-align:center;
+  position:relative;
+}
+h1{margin-bottom:6px}
+p{opacity:.9}
+
+.progress{
+  margin:14px 0;
+  height:10px;
+  background:rgba(255,255,255,.15);
+  border-radius:20px;
+  overflow:hidden;
+}
+.bar{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#4cd964,#ffcc00);
+  transition:width .4s ease;
+}
+
+.buttons{
+  margin-top:18px;
+  position:relative;
+  height:120px;
+}
+button{
+  position:absolute;
+  padding:10px 18px;
+  border-radius:10px;
+  border:none;
+  font-weight:600;
+  cursor:pointer;
+}
+#good{background:#4cd964;color:#000}
+#bad{background:#ff6b6b;color:#000}
+
+.msg{
+  margin-top:12px;
+  min-height:22px;
+  opacity:.85;
+}
+
+/* 🎃 Halloween */
+.halloween body{
+  background:radial-gradient(circle at top,#2b1400,#090400);
+}
+.halloween .panel{
+  border-color:#ff8c00;
+  box-shadow:0 0 20px rgba(255,140,0,.25);
+}
+
+/* ☢️ Nuclear visuals */
+.flash{
+  position:fixed;
+  inset:0;
+  background:white;
+  opacity:0;
+  pointer-events:none;
+  z-index:999;
+}
+.flash.active{
+  animation:flash 1.2s ease-out forwards;
+}
+@keyframes flash{
+  0%{opacity:1}
+  100%{opacity:0}
+}
+.mushroom{
+  position:fixed;
+  bottom:-200px;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:120px;
+  opacity:0;
+  z-index:998;
+}
+.mushroom.active{
+  animation:boom 2.5s ease-out forwards;
+}
+@keyframes boom{
+  0%{opacity:0;transform:translate(-50%,200px) scale(.2)}
+  40%{opacity:1}
+  100%{opacity:0;transform:translate(-50%,-200px) scale(1.6)}
+}
+</style>
+</head>
+
+<body>
+<div class="flash" id="flash"></div>
+<div class="mushroom" id="mushroom">☢️</div>
+
+<div class="panel">
+  <h1>Totally Normal Game</h1>
+  <p>Click the green button to continue.</p>
+
+  <div class="progress">
+    <div class="bar" id="bar"></div>
+  </div>
+
+  <div class="buttons">
+    <button id="good" style="left:40px;top:40px">Continue</button>
+    <button id="bad" style="right:40px;top:40px">Cancel</button>
+  </div>
+
+  <div class="msg" id="msg"></div>
+</div>
+
+<script>
+const bar = document.getElementById("bar");
+const good = document.getElementById("good");
+const bad  = document.getElementById("bad");
+const msg  = document.getElementById("msg");
+const flash = document.getElementById("flash");
+const mushroom = document.getElementById("mushroom");
+
+let progress=0, chaos=0;
+
+const msgs=["Nice.","Interesting.","Almost.","Try again.","Hmm.","Okay."];
+
+function move(btn){
+  btn.style.left=Math.random()*280+"px";
+  btn.style.top=Math.random()*80+"px";
+}
+function nuclear(){
+  flash.classList.add("active");
+  mushroom.classList.add("active");
+  msg.textContent="Unexpected outcome.";
+  setTimeout(()=>{
+    progress=0;
+    bar.style.width="0%";
+    flash.classList.remove("active");
+    mushroom.classList.remove("active");
+  },2500);
+}
+
+/* 🎭 Date logic (silent) */
+const d=new Date();
+if(d.getMonth()==9) document.documentElement.classList.add("halloween"); // Oct
+const aprilFools=(d.getMonth()==3 && d.getDate()==1);
+
+good.onclick=()=>{
+  chaos++;
+  progress += chaos%3?15:-10;
+  progress=Math.max(0,Math.min(100,progress));
+  bar.style.width=progress+"%";
+  msg.textContent=msgs[Math.floor(Math.random()*msgs.length)];
+
+  if(chaos>2) move(good);
+  if(chaos>4){
+    good.textContent=chaos%2?"Continue":"Cancel";
+    bad.textContent=chaos%2?"Cancel":"Continue";
+  }
+
+  if(progress>=100){
+    aprilFools || chaos>7 ? nuclear() : msg.textContent="Completed.";
+  }
+};
+
+bad.onclick=()=>{
+  msg.textContent=msgs[Math.floor(Math.random()*msgs.length)];
+  if(chaos>1) move(bad);
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Catch Me</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  margin:0;
+  height:100vh;
+  background:#0b0f1a;
+  font-family:monospace;
+  color:#0f0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+#arena{
+  position:relative;
+  width:90vw;
+  height:90vh;
+  border:2px solid #0f0;
+  border-radius:12px;
+}
+
+#target{
+  position:absolute;
+  padding:12px 18px;
+  background:#111;
+  color:#0f0;
+  border:1px solid #0f0;
+  border-radius:8px;
+  cursor:pointer;
+  transition:transform .15s;
+}
+
+#msg{
+  position:absolute;
+  top:10px;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:14px;
+  opacity:.8;
+}
+</style>
+</head>
+<body>
+
+<div id="arena">
+  <div id="msg">Click the button.</div>
+  <button id="target">Catch me</button>
+</div>
+
+<script>
+const arena = document.getElementById("arena");
+const target = document.getElementById("target");
+const msg = document.getElementById("msg");
+
+let level = 1;
+
+function move(){
+  const pad = 10;
+  const maxX = arena.clientWidth - target.offsetWidth - pad;
+  const maxY = arena.clientHeight - target.offsetHeight - pad;
+
+  const x = Math.random() * maxX + pad;
+  const y = Math.random() * maxY + pad;
+
+  target.style.left = x + "px";
+  target.style.top  = y + "px";
+}
+
+target.addEventListener("mouseenter", ()=>{
+  move();
+  level++;
+
+  if(level === 5) msg.textContent = "Almost there…";
+  if(level === 10) msg.textContent = "You were close.";
+  if(level === 15) msg.textContent = "Skill issue?";
+  if(level === 20) msg.textContent = "Maybe try slower.";
+});
+
+target.addEventListener("click", ()=>{
+  msg.textContent = "…wait, what?";
+  target.textContent = "Nice try";
+  move();
+
+  setTimeout(()=>{
+    target.textContent = "Catch me";
+    msg.textContent = "Click the button.";
+  },800);
+});
+
+// initial position
+move();
+</script>
+
+</body>
+</html>

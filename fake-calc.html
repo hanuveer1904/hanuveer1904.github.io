@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fake Calculator - Meme Edition</title>
+<style>
+:root{
+  --bg:#0b0f1a;
+  --panel:rgba(255,255,255,.05);
+  --border:rgba(255,255,255,.15);
+  --text:#e8ebff;
+  --accent:#4cd964;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;}
+body{
+  background:linear-gradient(180deg,#0f1221,#05070f);
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  color:var(--text);
+}
+
+.shell{
+  width:min(400px,90vw);
+  padding:32px;
+  border-radius:24px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  backdrop-filter:blur(18px);
+  box-shadow:0 30px 60px rgba(0,0,0,.5);
+  text-align:center;
+}
+
+h1{
+  font-size:1.5rem;
+  margin-bottom:12px;
+}
+
+#display{
+  width:100%;
+  background:rgba(255,255,255,.1);
+  border:none;
+  padding:12px;
+  border-radius:14px;
+  font-size:1.25rem;
+  color:var(--text);
+  margin-bottom:16px;
+  text-align:right;
+}
+
+button{
+  width:60px;
+  height:60px;
+  margin:6px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(180deg,#6bffb2,#3edc8a);
+  color:#08140c;
+  font-weight:600;
+  font-size:1.1rem;
+  cursor:pointer;
+  transition:.15s;
+}
+
+button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 28px rgba(76,217,100,.45);
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+<h1>Meme Calculator</h1>
+<input type="text" id="display" readonly>
+<div id="buttons">
+  <div>
+    <button>7</button>
+    <button>8</button>
+    <button>9</button>
+    <button>÷</button>
+  </div>
+  <div>
+    <button>4</button>
+    <button>5</button>
+    <button>6</button>
+    <button>×</button>
+  </div>
+  <div>
+    <button>1</button>
+    <button>2</button>
+    <button>3</button>
+    <button>-</button>
+  </div>
+  <div>
+    <button>0</button>
+    <button>.</button>
+    <button>=</button>
+    <button>+</button>
+  </div>
+  <div>
+    <button>C</button>
+  </div>
+</div>
+</div>
+
+<script>
+const display = document.getElementById("display");
+const buttons = document.querySelectorAll("#buttons button");
+
+let current = "";
+
+// Meme mapping (safe/funny)
+const memes = {
+  "1337":"Hackers detected!",
+  "666":"Evil!",
+  "42":"Answer to everything until you add a 0",
+  "7":"Lucky 7!",
+  "67":"Brainrots Detected",
+  "100":"PERFECT! Well, which you can't be.",
+  "12345":"Easy! Like your life"
+};
+
+function fakeEvaluate(expr){
+  const has6 = expr.includes("6");
+  const has7 = expr.includes("7");
+
+  // Check for 6+7 or 67 anywhere
+  if((has6 && has7)){
+    return "Brainrots are here";
+  }
+
+  let result;
+  try{
+    let jsExpr = expr.replace(/×/g,'*').replace(/÷/g,'/');
+    result = eval(jsExpr);
+  } catch(e){
+    return "Err!";
+  }
+
+  // Check for meme numbers
+  const strResult = result.toString();
+  if(memes[strResult]){
+    return memes[strResult];
+  }
+
+  // 50% random chance for chaos
+  if(Math.random()<0.5 && typeof result==="number"){
+    result = Math.floor(Math.random()*1000 - 500);
+  }
+
+  return result;
+}
+
+buttons.forEach(btn=>{
+  btn.onclick = ()=>{
+    const val = btn.textContent;
+    if(val==="C"){
+      current="";
+      display.value="";
+      return;
+    }
+    if(val==="="){
+      display.value = fakeEvaluate(current);
+      current = "";
+      return;
+    }
+    current += val;
+    display.value = current;
+  };
+});
+</script>
+
+</body>
+</html>

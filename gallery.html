@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Exclusive Gallery</title>
+  <style>
+    body {
+      background-color: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px 20px;
+      margin: 0;
+      user-select: none;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 40px;
+    }
+
+    .gallery {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+    }
+
+    .image-card {
+      background-color: #1e1e1e;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+      width: 400px;
+      transition: transform 0.3s;
+    }
+
+    .image-card:hover {
+      transform: scale(1.04);
+    }
+
+    .image-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      pointer-events: none;
+    }
+
+    .view-btn {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      background-color: #03a9f4;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .view-btn:hover {
+      background-color: #0288d1;
+    }
+  </style>
+</head>
+<body oncontextmenu="return false">
+
+  <h1>Hanuveer's Picture Gallery</h1>
+
+  <div class="gallery" id="gallery">
+    <!-- Cards injected by JS -->
+  </div>
+
+  <script>
+    const images = [
+      { src: "image1.png", title: "Image 1" },
+      { src: "image2.png", title: "Image 2" },
+      { src: "image3.png", title: "Image 3" },
+    ];
+
+    const gallery = document.getElementById('gallery');
+
+    images.forEach(img => {
+      const card = document.createElement('div');
+      card.className = 'image-card';
+
+      card.innerHTML = `
+        <img src="${img.src}" alt="${img.title}" draggable="false" />
+        <button class="view-btn">View</button>
+      `;
+
+      const viewBtn = card.querySelector('.view-btn');
+
+      viewBtn.addEventListener('click', () => {
+        const imgWindow = window.open('', '', 'width=1200,height=800,toolbar=no,menubar=no,scrollbars=no,resizable=yes');
+        imgWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>${img.title}</title>
+            <style>
+              html, body {
+                margin: 0;
+                padding: 0;
+                background-color: #000;
+                height: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+              }
+              img {
+                max-width: 100%;
+                max-height: 100%;
+              }
+            </style>
+          </head>
+          <body>
+            <img src="${img.src}" alt="${img.title}">
+          </body>
+          </html>
+        `);
+      });
+
+      gallery.appendChild(card);
+    });
+
+    // Block drag & copy
+    document.addEventListener('copy', e => e.preventDefault());
+    document.addEventListener('dragstart', e => e.preventDefault());
+  </script>
+
+</body>
+</html>

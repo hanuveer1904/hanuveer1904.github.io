@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pathfinding Visualizer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --bg:#0b0f1a;
+  --panel:rgba(255,255,255,.08);
+  --border:rgba(255,255,255,.15);
+  --cell:#10183a;
+  --wall:#1e2a55;
+  --start:#38d67a;
+  --end:#ff5f5f;
+  --visit:#ffd166;
+  --path:#6c8cff;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:system-ui,sans-serif;
+}
+
+body{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:radial-gradient(circle at top,#141b33,var(--bg));
+  color:white;
+}
+
+.app{
+  width:520px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:1rem;
+  backdrop-filter:blur(12px);
+}
+
+h1{
+  text-align:center;
+  margin-bottom:.6rem;
+}
+
+.controls{
+  display:flex;
+  justify-content:center;
+  gap:.5rem;
+  margin-bottom:.6rem;
+}
+
+button,select{
+  background:transparent;
+  border:1px solid var(--border);
+  color:white;
+  padding:.35rem .7rem;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+button:hover{
+  background:rgba(255,255,255,.12);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(20, 22px);
+  gap:2px;
+  justify-content:center;
+}
+
+.cell{
+  width:22px;
+  height:22px;
+  background:var(--cell);
+  border-radius:4px;
+  cursor:pointer;
+}
+.cell.wall{ background:var(--wall); }
+.cell.start{ background:var(--start); }
+.cell.end{ background:var(--end); }
+.cell.visit{ background:var(--visit); }
+.cell.path{ background:var(--path); }
+</style>
+</head>
+
+<body>
+
+<div class="app">
+  <h1>🧭 Pathfinding Visualizer</h1>
+
+  <div class="controls">
+    <select id="algo">
+      <option value="bfs">BFS (Shortest)</option>
+      <option value="dfs">DFS (Explore)</option>
+    </select>
+    <button onclick="start()">Start</button>
+    <button onclick="reset()">Reset</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const gridEl = document.getElementById("grid");
+const size = 20;
+
+let grid = [];
+let startPos = {x:2,y:2};
+let endPos = {x:17,y:17};
+let running = false;
+
+function init(){
+  grid = [];
+  gridEl.innerHTML = "";
+  for(let y=0;y<size;y++){
+    grid[y] = [];
+    for(let x=0;x<size;x++){
+      const d = document.createElement("div");
+      d.className = "cell";
+      d.onclick = ()=>toggleWall(x,y);
+      grid[y][x] = {wall:false, el:d, prev:null};
+      gridEl.appendChild(d);
+    }
+  }
+  draw();
+}
+
+function draw(){
+  for(let y=0;y<size;y++){
+    for(let x=0;x<size;x++){
+      const c = grid[y][x].el;
+      c.className = "cell";
+      if(grid[y][x].wall) c.classList.add("wall");
+      if(x===startPos.x && y===startPos.y) c.classList.add("start");
+      if(x===endPos.x && y===endPos.y) c.classList.add("end");
+    }
+  }
+}
+
+function toggleWall(x,y){
+  if(running) return;
+  if((x===startPos.x && y===startPos.y) ||
+     (x===endPos.x && y===endPos.y)) return;
+  grid[y][x].wall = !grid[y][x].wall;
+  draw();
+}
+
+function sleep(ms){
+  return new Promise(r=>setTimeout(r,ms));
+}
+
+async function start(){
+  if(running) return;
+  running = true;
+  clearVisits();
+  const algo = document.getElementById("algo").value;
+  if(algo==="bfs") await bfs();
+  if(algo==="dfs") await dfs();
+  running = false;
+}
+
+function clearVisits(){
+  for(let y=0;y<size;y++){
+    for(let x=0;x<size;x++){
+      grid[y][x].prev = null;
+      grid[y][x].el.classList.remove("visit","path");
+    }
+  }
+}
+
+async function bfs(){
+  const q = [];
+  q.push(startPos);
+  const seen = new Set([key(startPos)]);
+  while(q.length){
+    const {x,y} = q.shift();
+    if(x===endPos.x && y===endPos.y) return showPath(x,y);
+    for(const [dx,dy] of dirs()){
+      const nx=x+dx, ny=y+dy;
+      if(valid(nx,ny) && !seen.has(key({x:nx,y:ny}))){
+        seen.add(key({x:nx,y:ny}));
+        grid[ny][nx].prev = {x,y};
+        grid[ny][nx].el.classList.add("visit");
+        q.push({x:nx,y:ny});
+        await sleep(20);
+      }
+    }
+  }
+}
+
+async function dfs(){
+  const stack = [startPos];
+  const seen = new Set([key(startPos)]);
+  while(stack.length){
+    const {x,y} = stack.pop();
+    if(x===endPos.x && y===endPos.y) return showPath(x,y);
+    for(const [dx,dy] of dirs()){
+      const nx=x+dx, ny=y+dy;
+      if(valid(nx,ny) && !seen.has(key({x:nx,y:ny}))){
+        seen.add(key({x:nx,y:ny}));
+        grid[ny][nx].prev = {x,y};
+        grid[ny][nx].el.classList.add("visit");
+        stack.push({x:nx,y:ny});
+        await sleep(20);
+      }
+    }
+  }
+}
+
+function showPath(x,y){
+  while(grid[y][x].prev){
+    grid[y][x].el.classList.add("path");
+    ({x,y} = grid[y][x].prev);
+  }
+}
+
+function valid(x,y){
+  return x>=0 && y>=0 && x<size && y<size && !grid[y][x].wall;
+}
+
+function key(p){
+  return p.x+","+p.y;
+}
+
+function dirs(){
+  return [[1,0],[-1,0],[0,1],[0,-1]];
+}
+
+init();
+</script>
+
+</body>
+</html>

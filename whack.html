@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Whack-a-Mole</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --bg:#0b0f1a;
+  --panel:rgba(255,255,255,.08);
+  --border:rgba(255,255,255,.15);
+  --text:#eaeaff;
+  --accent:#6c8cff;
+  --danger:#ff6b6b;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:system-ui,sans-serif;
+}
+
+body{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:radial-gradient(circle at top,#141b33,var(--bg));
+  color:var(--text);
+}
+
+.game{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:1.4rem;
+  width:360px;
+  text-align:center;
+  backdrop-filter:blur(12px);
+}
+
+h1{
+  margin-bottom:.6rem;
+}
+
+.stats{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:1rem;
+  font-size:.9rem;
+  opacity:.9;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:.8rem;
+}
+
+.hole{
+  aspect-ratio:1;
+  background:rgba(0,0,0,.35);
+  border-radius:16px;
+  position:relative;
+  overflow:hidden;
+  cursor:pointer;
+}
+
+.mole{
+  position:absolute;
+  bottom:-100%;
+  left:50%;
+  transform:translateX(-50%);
+  width:70%;
+  height:70%;
+  background:var(--accent);
+  border-radius:50%;
+  transition:bottom .2s ease;
+}
+
+.hole.active .mole{
+  bottom:10%;
+}
+
+.hole.hit .mole{
+  background:var(--danger);
+}
+
+button{
+  margin-top:1.2rem;
+  width:100%;
+  padding:.6rem;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--text);
+  cursor:pointer;
+}
+
+button:hover{
+  background:rgba(255,255,255,.12);
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+  <h1>🔨 Whack-a-Mole</h1>
+
+  <div class="stats">
+    <span>Score: <b id="score">0</b></span>
+    <span>Time: <b id="time">30</b>s</span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <button onclick="start()">Start / Restart</button>
+</div>
+
+<script>
+const grid = document.getElementById("grid");
+const scoreEl = document.getElementById("score");
+const timeEl = document.getElementById("time");
+
+let holes = [];
+let score = 0;
+let time = 30;
+let moleTimer, gameTimer;
+let speed = 900;
+
+function createGrid(){
+  grid.innerHTML = "";
+  holes = [];
+
+  for(let i=0;i<9;i++){
+    const hole = document.createElement("div");
+    hole.className = "hole";
+
+    const mole = document.createElement("div");
+    mole.className = "mole";
+
+    hole.appendChild(mole);
+    hole.onclick = () => hit(hole);
+
+    grid.appendChild(hole);
+    holes.push(hole);
+  }
+}
+
+function start(){
+  clearInterval(moleTimer);
+  clearInterval(gameTimer);
+
+  score = 0;
+  time = 30;
+  speed = 900;
+
+  scoreEl.textContent = score;
+  timeEl.textContent = time;
+
+  holes.forEach(h=>h.classList.remove("active","hit"));
+
+  moleTimer = setInterval(showMole, speed);
+  gameTimer = setInterval(tick, 1000);
+}
+
+function showMole(){
+  holes.forEach(h=>h.classList.remove("active","hit"));
+
+  const hole = holes[Math.floor(Math.random()*holes.length)];
+  hole.classList.add("active");
+
+  // increase difficulty
+  if(speed > 350){
+    speed -= 10;
+    clearInterval(moleTimer);
+    moleTimer = setInterval(showMole, speed);
+  }
+}
+
+function hit(hole){
+  if(!hole.classList.contains("active")) return;
+
+  hole.classList.add("hit");
+  hole.classList.remove("active");
+  score++;
+  scoreEl.textContent = score;
+}
+
+function tick(){
+  time--;
+  timeEl.textContent = time;
+
+  if(time <= 0){
+    endGame();
+  }
+}
+
+function endGame(){
+  clearInterval(moleTimer);
+  clearInterval(gameTimer);
+  holes.forEach(h=>h.classList.remove("active"));
+  alert("Time up! Your score: " + score);
+}
+
+createGrid();
+</script>
+
+</body>
+</html>
